@@ -38,7 +38,7 @@ export function VideojuegosLista() {
         texto="Cada juego tiene una historia. Lleva el registro de la tuya."
         accion={
           <Link className="boton" to="/videojuegos/nuevo">
-            <span aria-hidden="true">＋</span> Nuevo videojuego
+            <span aria-hidden="true">+</span> Nuevo videojuego
           </Link>
         }
       />

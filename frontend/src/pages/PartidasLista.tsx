@@ -36,7 +36,7 @@ export function PartidasLista() {
         texto="Todas tus sesiones, desde la más reciente. Cada minuto forma parte de tu progreso."
         accion={
           <Link className="boton" to="/partidas/nueva">
-            ＋ Registrar partida
+            + Registrar partida
           </Link>
         }
       />

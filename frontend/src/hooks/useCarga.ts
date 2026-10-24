@@ -36,6 +36,7 @@ export function useCarga<T>(
   }, [...dependencias, revision]);
   return {
     datos,
+    setDatos,
     cargando,
     error,
     recargar: () => setRevision((valor) => valor + 1),

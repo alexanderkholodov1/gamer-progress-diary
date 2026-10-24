@@ -22,12 +22,35 @@ export function VideojuegoDetalle() {
     return { juego, resumen, partidas };
   }, [id]);
   const marcarLogro = async (logroId: string, obtenido: boolean) => {
+    const anterior = consulta.datos?.juego;
     setOcupado(logroId);
     setErrorAccion("");
+    // Respuesta inmediata del control; se revierte si el servidor rechaza el cambio.
+    consulta.setDatos((actual) =>
+      actual && actual.juego._id === id
+        ? {
+            ...actual,
+            juego: {
+              ...actual.juego,
+              logros: actual.juego.logros.map((logro) =>
+                logro._id === logroId ? { ...logro, obtenido } : logro,
+              ),
+            },
+          }
+        : actual,
+    );
     try {
-      await videojuegosApi.marcarLogro(id, logroId, obtenido);
-      consulta.recargar();
+      const juego = await videojuegosApi.marcarLogro(id, logroId, obtenido);
+      consulta.setDatos((actual) =>
+        actual && actual.juego._id === id ? { ...actual, juego } : actual,
+      );
     } catch (error) {
+      if (anterior)
+        consulta.setDatos((actual) =>
+          actual && actual.juego._id === id
+            ? { ...actual, juego: anterior }
+            : actual,
+        );
       setErrorAccion(mensajeError(error));
     } finally {
       setOcupado("");
@@ -102,7 +125,7 @@ export function VideojuegoDetalle() {
               Editar juego
             </Link>
             <Link className="boton" to={`/partidas/nueva?videojuego=${id}`}>
-              ＋ Registrar partida
+              + Registrar partida
             </Link>
           </>
         }

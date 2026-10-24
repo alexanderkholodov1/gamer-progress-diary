@@ -255,7 +255,7 @@ function Formulario({ inicial }: { inicial?: Videojuego }) {
               })
             }
           >
-            ＋ Añadir logro
+            + Añadir logro
           </button>
         </fieldset>
         {error && <Fallo mensaje={error} />}
