@@ -5,11 +5,11 @@ Entregable 3 · Fecha límite: **23 de octubre de 2026, 23:59 (Ecuador)**.
 
 Una biblioteca personal para responder: **¿qué estoy jugando, cuánto tiempo le he dedicado y qué tan avanzado voy?** Permite registrar videojuegos, anotar sesiones, consultar un resumen calculado y marcar logros.
 
-## Estado de la entrega y ramas
+## Ramas e integración
 
-El repositorio es local y no tiene remoto. `main` contiene el backend, sus pruebas, el Blueprint y la documentación. **`feature/frontend` contiene además el frontend completo y se entrega activa, sin fusionar.** Para ejecutar ambos, usa esa rama. Alexander debe publicar las dos ramas en su propio GitHub, abrir el pull request `feature/frontend → main` e integrarlo antes de conectar Render. No se creó repositorio de GitHub, no se hizo push y todavía no existe evidencia de PR ni despliegue público.
+`main` es la rama de integración y despliegue. Contiene el backend, sus pruebas, el Blueprint de Render y la documentación. La rama `feature/frontend` contiene el frontend completo y se integra en `main` mediante un pull request con base `main` y comparación `feature/frontend`.
 
-Consulta [PROGRESS.md](PROGRESS.md) para los comandos y resultados de verificación.
+La integración utiliza **Create a merge commit** para conservar los commits organizados por capa y pantalla. El despliegue del proyecto completo se realiza desde `main` después de integrar el pull request. La sección «URLs públicas» reúne los enlaces del proyecto y se completa después del despliegue.
 
 ## Modelo de datos y decisiones
 
@@ -69,7 +69,7 @@ Express 5 propaga los errores de controladores asíncronos al middleware central
 
 ## Instalación y ejecución local
 
-Requisitos: Node.js **22.12 o superior** (verificado con 22.23.3), npm, MongoDB Atlas o una instancia local y dos terminales.
+Requisitos: Node.js **22.12 o superior**, npm, MongoDB Atlas o una instancia local y dos terminales.
 
 ```bash
 git switch feature/frontend
@@ -78,7 +78,7 @@ npm ci
 cp .env.example .env
 ```
 
-Completa `backend/.env`: `MONGODB_URI` con tu cadena de conexión; `MONGODB_DB` es opcional y permite elegir una base dedicada (por ejemplo, `diario-gamer`), con prioridad sobre la base de la URI. Si se omite o queda vacío, se usa la base indicada por la URI; `FRONTEND_URL=http://localhost:5173`; `PORT=3000`; `NODE_ENV=development`. Nunca publiques `.env`. En Atlas, crea un usuario de base de datos con acceso a esa base y permite tu IP de desarrollo en Network Access.
+Configuración de `backend/.env`: `MONGODB_URI` con la cadena de conexión; `MONGODB_DB` es opcional y permite elegir una base dedicada (por ejemplo, `diario-gamer`), con prioridad sobre la base de la URI. Si se omite o queda vacío, se usa la base indicada por la URI; `FRONTEND_URL=http://localhost:5173`; `PORT=3000`; `NODE_ENV=development`. `.env` contiene configuración privada y está excluido del control de versiones. En Atlas se requiere un usuario con acceso a esa base y la IP de desarrollo autorizada en Network Access.
 
 ```bash
 # Desde backend/
@@ -96,7 +96,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Abre `http://localhost:5173`. La variable `VITE_API_URL` incluye `/api` y se integra al compilar. `FRONTEND_URL` es el origen del frontend, sin ruta ni barra final. Vite usa puerto 5173 estricto para mantener coherencia con CORS.
+El frontend local está disponible en `http://localhost:5173`. La variable `VITE_API_URL` incluye `/api` y se integra al compilar. `FRONTEND_URL` es el origen del frontend, sin ruta ni barra final. Vite usa puerto 5173 estricto para mantener coherencia con CORS.
 
 ### Comprobaciones
 
@@ -150,16 +150,16 @@ Ejemplo: `{ "error": { "tipo": "NO_ENCONTRADO", "mensaje": "No se encontró el v
 
 ## Despliegue en Render con Blueprint
 
-1. Publica el repositorio en tu GitHub e integra `feature/frontend → main` mediante un pull request. Conserva el PR como evidencia de la rúbrica.
-2. En MongoDB Atlas, prepara una base dedicada y un usuario con permisos de lectura/escritura. Configura Network Access con las IP de salida del Web Service de Render (visibles en su panel). Copia la URI únicamente al panel de variables de Render; sustituye los datos del usuario, contraseña y base de datos.
-3. En Render entra a **New → Blueprint**, conecta tu repositorio, selecciona `main` y usa el archivo `render.yaml` de la raíz. Cambia los nombres de servicios si ya están ocupados; las URLs finales las asigna Render.
-4. El Blueprint declara un **Web Service Node** (`backend/`) y un **Static Site** (`frontend/`). En los valores solicitados (`sync: false`) ingresa `MONGODB_URI`, opcionalmente `MONGODB_DB` para elegir la base de datos, `FRONTEND_URL` (origen público HTTPS del sitio) y `VITE_API_URL` (URL pública HTTPS de la API terminada en `/api`). Si aún no conoces las URLs, completa con valores provisionales sin secretos y corrígelos en el paso siguiente.
-5. Una vez asignadas las URLs reales, en **Environment** del backend configura `FRONTEND_URL=https://TU-SITIO.onrender.com` (sin barra final). En el frontend configura `VITE_API_URL=https://TU-API.onrender.com/api`. Reinicia/redeploy del backend y ejecuta **Deploy latest commit** del frontend para recompilar Vite. No uses hostnames internos de Render en el navegador.
+1. El código se aloja en GitHub y la rama `feature/frontend` se integra en `main` mediante un pull request. El enlace del PR documenta la integración.
+2. MongoDB Atlas requiere una base dedicada y un usuario con permisos de lectura/escritura. Network Access debe autorizar las IP de salida del Web Service de Render, disponibles en su panel. La URI con las credenciales se configura únicamente en las variables privadas del servicio.
+3. La opción **New → Blueprint** de Render conecta el repositorio, selecciona `main` y utiliza `render.yaml` de la raíz. Los nombres de los servicios deben estar disponibles; Render asigna las URLs finales.
+4. El Blueprint declara un **Web Service Node** (`backend/`) y un **Static Site** (`frontend/`). Las variables solicitadas (`sync: false`) son `MONGODB_URI`, opcionalmente `MONGODB_DB` para elegir la base de datos, `FRONTEND_URL` (origen público HTTPS del sitio) y `VITE_API_URL` (URL pública HTTPS de la API terminada en `/api`). Las URLs provisionales se sustituyen por las definitivas una vez asignadas.
+5. En **Environment** del backend, `FRONTEND_URL=https://TU-SITIO.onrender.com` se configura sin barra final. En el frontend, `VITE_API_URL=https://TU-API.onrender.com/api` requiere una URL pública accesible desde el navegador. Los cambios requieren un nuevo despliegue del backend y **Deploy latest commit** del frontend para recompilar Vite.
 6. El backend compila con `npm ci --include=dev && npm run build` y arranca con `npm start`. Render proporciona `PORT`; se escucha en `0.0.0.0`. El frontend compila igual y sirve `./dist`; la regla `/* → /index.html` permite abrir rutas de React Router directamente.
-7. Verifica `https://TU-API.onrender.com/api/health`, luego abre la biblioteca en el sitio. Crea un juego, registra tres partidas, confirma el resumen y marca un logro. Recarga una ruta de detalle directamente para comprobar la reescritura y revisa la consola del navegador para comprobar CORS.
-8. Para datos iniciales en Atlas, configura tu `.env` local con la base de producción y ejecuta `npm run seed` desde `backend/`. Usa una base propia del proyecto; no se borran datos existentes. Actualiza las URLs de abajo y guarda evidencia de la demo y del PR.
+7. La comprobación del despliegue incluye `https://TU-API.onrender.com/api/health`, la creación de un juego, el registro de tres partidas, la consulta del resumen y la actualización de un logro. La recarga directa de una ruta de detalle comprueba la reescritura; la consola del navegador permite comprobar CORS.
+8. La carga de datos iniciales utiliza `npm run seed` desde `backend/`, con el `.env` local configurado para la base del proyecto. El seed no borra datos existentes. Los enlaces del sitio, la API, el PR y la demostración se registran en «URLs públicas» después del despliegue.
 
-Los valores `sync: false` se piden al crear el Blueprint; si agregas variables después, configúralas manualmente en cada servicio. Referencias oficiales: [especificación Blueprint](https://render.com/docs/blueprint-spec), [monorepos](https://render.com/docs/monorepo-support) y [reescrituras](https://render.com/docs/redirects-rewrites).
+Los valores `sync: false` se piden al crear el Blueprint; las variables agregadas posteriormente se configuran manualmente en cada servicio. Referencias oficiales: [especificación Blueprint](https://render.com/docs/blueprint-spec), [monorepos](https://render.com/docs/monorepo-support) y [reescrituras](https://render.com/docs/redirects-rewrites).
 
 ## Guion de demostración
 
@@ -172,10 +172,10 @@ Los valores `sync: false` se piden al crear el Blueprint; si agregas variables d
 
 ## URLs públicas
 
-Completar después del despliegue; **estos servicios aún no se han publicado**.
+Enlaces por completar después del despliegue.
 
-- Frontend: **PENDIENTE — pegar URL pública de Render**.
-- Backend: **PENDIENTE — pegar URL pública de Render**.
+- Frontend: **PENDIENTE — URL pública de Render**.
+- Backend: **PENDIENTE — URL pública de Render**.
 - Health: **PENDIENTE — URL del backend + `/api/health`**.
 - Repositorio GitHub: **PENDIENTE**.
 - Pull request integrado: **PENDIENTE**.
