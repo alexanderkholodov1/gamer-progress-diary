@@ -78,7 +78,7 @@ npm ci
 cp .env.example .env
 ```
 
-Completa `backend/.env`: `MONGODB_URI` con tu cadena de conexión y una base de datos dedicada; `FRONTEND_URL=http://localhost:5173`; `PORT=3000`; `NODE_ENV=development`. Nunca publiques `.env`. En Atlas, crea un usuario de base de datos con acceso a esa base y permite tu IP de desarrollo en Network Access.
+Completa `backend/.env`: `MONGODB_URI` con tu cadena de conexión; `MONGODB_DB` es opcional y permite elegir una base dedicada (por ejemplo, `diario-gamer`), con prioridad sobre la base de la URI. Si se omite o queda vacío, se usa la base indicada por la URI; `FRONTEND_URL=http://localhost:5173`; `PORT=3000`; `NODE_ENV=development`. Nunca publiques `.env`. En Atlas, crea un usuario de base de datos con acceso a esa base y permite tu IP de desarrollo en Network Access.
 
 ```bash
 # Desde backend/
@@ -112,7 +112,7 @@ npm run build
 
 `npm test` usa Vitest + supertest + mongodb-memory-server, una base efímera aislada y sin credenciales. Cubre todas las rutas, validaciones, populate, filtros, logros, resumen vacío y actualización después de agregar una partida; provoca también un error inesperado mediante mock de la base de datos, sin exponer rutas de fallo en producción. La primera ejecución descarga el binario de MongoDB y necesita acceso a Internet. La caché de binarios de prueba está en `/tmp/diario-mongodb-binaries`.
 
-`npm run demo:memoria` inicia MongoDB temporal, asigna su URI al entorno del proceso, utiliza la misma conexión y aplicación Express, ejecuta el seed, abre un puerto HTTP efímero, solicita el resumen y comprueba su respuesta. Cierra servidor y base al terminar. No modifica Atlas. `npm run seed` utiliza exclusivamente `MONGODB_URI` del entorno: es repetible, no vacía colecciones y crea **Hollow Knight (demo)** con tres sesiones (235 minutos → 3.9 horas; avance 38 %).
+`npm run demo:memoria` inicia MongoDB temporal, asigna su URI al entorno del proceso, utiliza la misma conexión y aplicación Express, ejecuta el seed, abre un puerto HTTP efímero, solicita el resumen y comprueba su respuesta. Cierra servidor y base al terminar. No modifica Atlas. `npm run seed` utiliza `MONGODB_URI` y la base opcional `MONGODB_DB` del entorno: es repetible, no vacía colecciones y crea **Hollow Knight (demo)** con tres sesiones (235 minutos → 3.9 horas; avance 38 %).
 
 ## API REST
 
@@ -153,7 +153,7 @@ Ejemplo: `{ "error": { "tipo": "NO_ENCONTRADO", "mensaje": "No se encontró el v
 1. Publica el repositorio en tu GitHub e integra `feature/frontend → main` mediante un pull request. Conserva el PR como evidencia de la rúbrica.
 2. En MongoDB Atlas, prepara una base dedicada y un usuario con permisos de lectura/escritura. Configura Network Access con las IP de salida del Web Service de Render (visibles en su panel). Copia la URI únicamente al panel de variables de Render; sustituye los datos del usuario, contraseña y base de datos.
 3. En Render entra a **New → Blueprint**, conecta tu repositorio, selecciona `main` y usa el archivo `render.yaml` de la raíz. Cambia los nombres de servicios si ya están ocupados; las URLs finales las asigna Render.
-4. El Blueprint declara un **Web Service Node** (`backend/`) y un **Static Site** (`frontend/`). En los valores solicitados (`sync: false`) ingresa `MONGODB_URI`, `FRONTEND_URL` (origen público HTTPS del sitio) y `VITE_API_URL` (URL pública HTTPS de la API terminada en `/api`). Si aún no conoces las URLs, completa con valores provisionales sin secretos y corrígelos en el paso siguiente.
+4. El Blueprint declara un **Web Service Node** (`backend/`) y un **Static Site** (`frontend/`). En los valores solicitados (`sync: false`) ingresa `MONGODB_URI`, opcionalmente `MONGODB_DB` para elegir la base de datos, `FRONTEND_URL` (origen público HTTPS del sitio) y `VITE_API_URL` (URL pública HTTPS de la API terminada en `/api`). Si aún no conoces las URLs, completa con valores provisionales sin secretos y corrígelos en el paso siguiente.
 5. Una vez asignadas las URLs reales, en **Environment** del backend configura `FRONTEND_URL=https://TU-SITIO.onrender.com` (sin barra final). En el frontend configura `VITE_API_URL=https://TU-API.onrender.com/api`. Reinicia/redeploy del backend y ejecuta **Deploy latest commit** del frontend para recompilar Vite. No uses hostnames internos de Render en el navegador.
 6. El backend compila con `npm ci --include=dev && npm run build` y arranca con `npm start`. Render proporciona `PORT`; se escucha en `0.0.0.0`. El frontend compila igual y sirve `./dist`; la regla `/* → /index.html` permite abrir rutas de React Router directamente.
 7. Verifica `https://TU-API.onrender.com/api/health`, luego abre la biblioteca en el sitio. Crea un juego, registra tres partidas, confirma el resumen y marca un logro. Recarga una ruta de detalle directamente para comprobar la reescritura y revisa la consola del navegador para comprobar CORS.
