@@ -284,4 +284,4 @@ Proyecto desplegado en Render, con el frontend y el backend comunicados en produ
 - Health: https://gamer-progress-diary-api.onrender.com/api/health
 - Repositorio GitHub: https://github.com/alexanderkholodov1/gamer-progress-diary
 - Pull request integrado: https://github.com/alexanderkholodov1/gamer-progress-diary/pull/1
-- Demo en vivo o grabada: **PENDIENTE**.
+- Demo en vivo o grabada: https://youtu.be/odiBlS8cl-g.
