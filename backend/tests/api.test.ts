@@ -157,6 +157,33 @@ describe('Cuatro tipos de error y middleware', () => {
     const juego = await crearJuego();
     errorTipo(await request(app).post('/api/partidas').send(sesion(juego._id, datos)), 400, 'VALIDACION');
   });
+  it.each([null, [null], { nombre: 'No es un arreglo' }, Array.from({ length: 51 }, () => ({ nombre: 'Meta' }))])(
+    'rechaza logros nulos, elementos nulos, objetos sueltos y listas no acotadas', async logros => {
+      errorTipo(await request(app).post('/api/videojuegos').send({ ...ficha, logros }), 400,
+        logros && !Array.isArray(logros) ? 'ID_MALFORMADO' : 'VALIDACION');
+      const juego = await crearJuego();
+      errorTipo(await request(app).patch(`/api/videojuegos/${juego._id}`).send({ logros }), 400,
+        logros && !Array.isArray(logros) ? 'ID_MALFORMADO' : 'VALIDACION');
+      expect((await request(app).get(`/api/videojuegos/${juego._id}`).expect(200)).body.logros).toHaveLength(1);
+    },
+  );
+  it('acepta cero y hasta 50 logros y conserva el booleano por defecto', async () => {
+    for (const cantidad of [0, 50]) {
+      const respuesta = await request(app).post('/api/videojuegos').send({
+        ...ficha, logros: Array.from({ length: cantidad }, (_, i) => ({ nombre: `Meta ${i + 1}` })),
+      }).expect(201);
+      expect(respuesta.body.logros).toHaveLength(cantidad);
+      expect(respuesta.body.logros.every((logro: { obtenido: boolean }) => logro.obtenido === false)).toBe(true);
+    }
+  });
+  it('rechaza duraciones infinitas que convertirían las horas del resumen en null', async () => {
+    const juego = await crearJuego();
+    const cuerpo = JSON.stringify(sesion(juego._id)).replace('"duracionMinutos":65', '"duracionMinutos":1e309');
+    errorTipo(await request(app).post('/api/partidas').set('Content-Type', 'application/json').send(cuerpo), 400, 'VALIDACION');
+    const partida = (await request(app).post('/api/partidas').send(sesion(juego._id)).expect(201)).body;
+    errorTipo(await request(app).patch(`/api/partidas/${partida._id}`).set('Content-Type', 'application/json')
+      .send('{"duracionMinutos":1e309}'), 400, 'VALIDACION');
+  });
   it('acepta los límites de avance 0 y 100 y duración mínima 1', async () => {
     const juego = await crearJuego();
     for (const porcentajeAvance of [0, 100]) {

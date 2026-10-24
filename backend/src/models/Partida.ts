@@ -3,7 +3,10 @@ import { Schema, model } from 'mongoose';
 const partidaSchema = new Schema({
   videojuego: { type: Schema.Types.ObjectId, ref: 'Videojuego', required: true, index: true },
   fecha: { type: Date, required: [true, 'La fecha es obligatoria.'] },
-  duracionMinutos: { type: Number, required: true, min: [1, 'La duración mínima es un minuto.'] },
+  duracionMinutos: {
+    type: Number, required: true, min: [1, 'La duración mínima es un minuto.'],
+    validate: { validator: Number.isFinite, message: 'La duración debe ser un número finito.' },
+  },
   porcentajeAvance: { type: Number, required: true, min: 0, max: 100 },
   notas: { type: String, trim: true },
 }, { timestamps: true });

@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Error as MongooseError, Schema, model } from 'mongoose';
 
 export const plataformas = ['PC', 'PlayStation', 'Xbox', 'Switch', 'Movil'] as const;
 export const generos = ['accion', 'rol', 'estrategia', 'puzzle', 'deportes', 'otro'] as const;
@@ -14,7 +14,17 @@ const videojuegoSchema = new Schema({
   plataforma: { type: String, enum: plataformas, required: true },
   genero: { type: String, enum: generos, required: true },
   estado: { type: String, enum: estados, required: true, default: 'jugando' },
-  logros: { type: [logroSchema], default: [] },
+  logros: {
+    type: [logroSchema], default: [], required: true,
+    set: (valor: unknown) => {
+      if (valor != null && !Array.isArray(valor)) throw new MongooseError.CastError('Array', valor, 'logros');
+      return valor;
+    },
+    validate: {
+      validator: (logros: unknown[]) => Array.isArray(logros) && logros.length <= 50 && logros.every(logro => logro !== null),
+      message: 'Los logros deben ser una lista de hasta 50 subdocumentos no nulos.',
+    },
+  },
 }, { timestamps: true });
 
 export const Videojuego = model('Videojuego', videojuegoSchema);
