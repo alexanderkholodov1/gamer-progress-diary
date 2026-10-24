@@ -170,6 +170,14 @@ Los valores `sync: false` se piden al crear el Blueprint; las variables agregada
 5. Marcar un logro como obtenido y recargar para demostrar persistencia.
 6. Mostrar el historial global con nombres de videojuegos (populate), el filtro de biblioteca, la edición y el PR integrado.
 
+## Capturas de la interfaz
+
+- [Detalle y resumen en escritorio](docs/capturas/detalle-escritorio.png).
+- [Detalle en móvil](docs/capturas/detalle-movil.png).
+- [Biblioteca en móvil](docs/capturas/biblioteca-movil.png).
+
+Las capturas muestran la biblioteca y el detalle con el resumen calculado en escritorio y móvil.
+
 ## URLs públicas
 
 Enlaces por completar después del despliegue.
