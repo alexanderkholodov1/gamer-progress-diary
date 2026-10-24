@@ -2,7 +2,7 @@
 # Crear el Blueprint después de integrar feature/frontend mediante pull request.
 services:
   - type: web
-    name: diario-progreso-gamer-api
+    name: gamer-progress-diary-api
     runtime: node
     rootDir: backend
     plan: free
@@ -18,10 +18,12 @@ services:
         sync: false
       - key: MONGODB_DB
         sync: false
+      - key: MONGODB_DB
+        value: diario-gamer
       - key: FRONTEND_URL
         sync: false
   - type: web
-    name: diario-progreso-gamer-web
+    name: gamer-progress-diary-web
     runtime: static
     rootDir: frontend
     buildCommand: npm ci --include=dev && npm run build
