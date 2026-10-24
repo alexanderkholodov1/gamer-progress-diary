@@ -11,6 +11,16 @@ El repositorio es local y no tiene remoto. `main` contiene el backend, sus prueb
 
 Consulta [PROGRESS.md](PROGRESS.md) para los comandos y resultados de verificación.
 
+Después de crear un repositorio **vacío** en tu cuenta de GitHub (sin README ni `.gitignore` iniciales), desde esta carpeta ejecuta:
+
+```bash
+git remote add origin https://github.com/TU_USUARIO/TU_REPOSITORIO.git
+git push -u origin main
+git push -u origin feature/frontend
+```
+
+En GitHub abre **Compare & pull request**: base `main`, compare `feature/frontend`. Revisa los commits por pantalla e integra el PR conservando sus commits (**Create a merge commit**). Guarda el enlace del PR como evidencia; después conecta `main` al Blueprint de Render. Para sincronizar tu copia local después de la integración: `git switch main` y `git pull --ff-only origin main`. Estos comandos quedan documentados para el operador; no se ejecutaron durante la preparación.
+
 ## Modelo de datos y decisiones
 
 ### Videojuego
@@ -169,6 +179,14 @@ Los valores `sync: false` se piden al crear el Blueprint; si agregas variables d
 4. Agregar otras dos sesiones con fechas posteriores; explicar que el avance actual corresponde a la fecha más reciente.
 5. Marcar un logro como obtenido y recargar para demostrar persistencia.
 6. Mostrar el historial global con nombres de videojuegos (populate), el filtro de biblioteca, la edición y el PR integrado.
+
+## Capturas de la verificación local
+
+- [Detalle y resumen en escritorio](docs/capturas/detalle-escritorio.png).
+- [Detalle en móvil](docs/capturas/detalle-movil.png).
+- [Biblioteca en móvil](docs/capturas/biblioteca-movil.png).
+
+El flujo se comprobó en Chromium sobre la compilación de producción, con API y base de datos temporales. Las capturas son evidencia local; el despliegue y la demo pública siguen pendientes.
 
 ## URLs públicas
 
