@@ -180,11 +180,11 @@ Las capturas muestran la biblioteca y el detalle con el resumen calculado en esc
 
 ## URLs públicas
 
-Enlaces por completar después del despliegue.
+Proyecto desplegado en Render, con el frontend y el backend comunicados en producción.
 
-- Frontend: **PENDIENTE — URL pública de Render**.
-- Backend: **PENDIENTE — URL pública de Render**.
-- Health: **PENDIENTE — URL del backend + `/api/health`**.
-- Repositorio GitHub: **PENDIENTE**.
-- Pull request integrado: **PENDIENTE**.
+- Frontend: https://gamer-progress-diary-web.onrender.com
+- Backend (API): https://gamer-progress-diary-api.onrender.com/api
+- Health: https://gamer-progress-diary-api.onrender.com/api/health
+- Repositorio GitHub: https://github.com/alexanderkholodov1/gamer-progress-diary
+- Pull request integrado: https://github.com/alexanderkholodov1/gamer-progress-diary/pull/1
 - Demo en vivo o grabada: **PENDIENTE**.
