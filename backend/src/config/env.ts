@@ -5,6 +5,7 @@ dotenv.config({ quiet: true });
 export const env = {
   PORT: Number(process.env.PORT ?? 3000),
   MONGODB_URI: process.env.MONGODB_URI ?? '',
+  MONGODB_DB: process.env.MONGODB_DB || undefined,
   FRONTEND_URL: process.env.FRONTEND_URL ?? 'http://localhost:5173',
   NODE_ENV: process.env.NODE_ENV ?? 'development',
 };
