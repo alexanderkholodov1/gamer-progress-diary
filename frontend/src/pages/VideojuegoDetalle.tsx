@@ -88,7 +88,7 @@ export function VideojuegoDetalle() {
     }
   };
   if (consulta.cargando) return <Cargando texto="Preparando tu progreso…" />;
-  if (consulta.error)
+  if (consulta.error && !consulta.noEncontrado)
     return (
       <>
         <Link className="volver" to="/videojuegos">
@@ -97,7 +97,7 @@ export function VideojuegoDetalle() {
         <Fallo mensaje={consulta.error} reintentar={consulta.recargar} />
       </>
     );
-  if (!consulta.datos)
+  if (consulta.noEncontrado || !consulta.datos)
     return (
       <Vacio
         titulo="Videojuego no disponible"

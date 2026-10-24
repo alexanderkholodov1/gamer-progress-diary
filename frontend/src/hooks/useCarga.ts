@@ -1,4 +1,5 @@
 import { useEffect, useState, type DependencyList } from "react";
+import { ErrorApi } from "../api/cliente";
 
 export function mensajeError(error: unknown) {
   return error instanceof Error
@@ -13,18 +14,23 @@ export function useCarga<T>(
   const [datos, setDatos] = useState<T | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const [noEncontrado, setNoEncontrado] = useState(false);
   const [revision, setRevision] = useState(0);
   useEffect(() => {
     let vigente = true;
     setCargando(true);
     setError("");
+    setNoEncontrado(false);
     setDatos(null);
     cargar()
       .then((resultado) => {
         if (vigente) setDatos(resultado);
       })
       .catch((fallo) => {
-        if (vigente) setError(mensajeError(fallo));
+        if (vigente) {
+          setNoEncontrado(fallo instanceof ErrorApi && fallo.status === 404);
+          setError(mensajeError(fallo));
+        }
       })
       .finally(() => {
         if (vigente) setCargando(false);
@@ -39,6 +45,7 @@ export function useCarga<T>(
     setDatos,
     cargando,
     error,
+    noEncontrado,
     recargar: () => setRevision((valor) => valor + 1),
   };
 }

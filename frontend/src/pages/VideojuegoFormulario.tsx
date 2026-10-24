@@ -27,7 +27,7 @@ export function VideojuegoFormulario() {
         }
       />
     );
-  if (consulta.error)
+  if (consulta.error && !consulta.noEncontrado)
     return (
       <>
         <Link className="volver" to="/videojuegos">
@@ -36,7 +36,7 @@ export function VideojuegoFormulario() {
         <Fallo mensaje={consulta.error} reintentar={consulta.recargar} />
       </>
     );
-  if (id && !consulta.datos)
+  if (consulta.noEncontrado || (id && !consulta.datos))
     return (
       <Vacio
         titulo="Videojuego no disponible"
@@ -202,7 +202,7 @@ function Formulario({ inicial }: { inicial?: Videojuego }) {
           <legend>Pequeñas metas, grandes logros</legend>
           <p className="ayuda">
             Opcional. Define los logros propios de este juego; podrás marcarlos
-            desde su detalle.
+            desde su detalle. Puedes añadir hasta 50 logros por videojuego.
           </p>
           {datos.logros.length === 0 && (
             <p className="vacio-inline">
@@ -248,6 +248,7 @@ function Formulario({ inicial }: { inicial?: Videojuego }) {
           <button
             className="boton secundario"
             type="button"
+            disabled={datos.logros.length >= 50}
             onClick={() =>
               setDatos({
                 ...datos,
