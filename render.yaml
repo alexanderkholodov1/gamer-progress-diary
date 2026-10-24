@@ -1,0 +1,35 @@
+# Completar los valores sync:false en el panel de Render; nunca guardar secretos aquí.
+# Crear el Blueprint después de integrar feature/frontend mediante pull request.
+services:
+  - type: web
+    name: diario-progreso-gamer-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.23.3
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+  - type: web
+    name: diario-progreso-gamer-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci --include=dev && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_VERSION
+        value: 22.23.3
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
