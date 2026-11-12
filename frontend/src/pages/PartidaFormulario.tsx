@@ -1,32 +1,76 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { videojuegosApi } from "../api/videojuegosApi";
 import { partidasApi } from "../api/partidasApi";
-import type { Videojuego } from "../api/tipos";
+import type { Partida, Videojuego } from "../api/tipos";
 import { mensajeError, useCarga } from "../hooks/useCarga";
 import { Cargando, Fallo, Vacio } from "../components/Estados";
 import { Encabezado } from "../components/Encabezado";
 
+/** Valor de un campo datetime-local en la hora del dispositivo. */
+const aCampoLocal = (fecha: Date) =>
+  new Date(fecha.getTime() - fecha.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+
+const idDeJuego = (partida: Partida) =>
+  typeof partida.videojuego === "object" && partida.videojuego
+    ? partida.videojuego._id
+    : (partida.videojuego ?? "");
+
+// Registra (/partidas/nueva) o edita (/partidas/:id/editar) una partida. Al guardar vuelve al
+// detalle del juego, que vuelve a consultar el resumen y el progreso semanal (HU-2.7, T-09).
 export function PartidaFormulario() {
+  const { id } = useParams();
   const [parametros] = useSearchParams();
   const seleccionado = parametros.get("videojuego") ?? "";
-  const consulta = useCarga(() => videojuegosApi.listar(), []);
+  const consulta = useCarga(async () => {
+    const [juegos, partida] = await Promise.all([
+      videojuegosApi.listar(),
+      id ? partidasApi.obtener(id) : Promise.resolve(null),
+    ]);
+    return { juegos, partida };
+  }, [id]);
+  const titulo = id ? "Editar partida" : "Registrar partida";
   if (consulta.cargando)
     return (
-      <Cargando texto="Buscando tus videojuegos para registrar la partida…" />
+      <Cargando
+        texto={
+          id
+            ? "Cargando la partida…"
+            : "Buscando tus videojuegos para registrar la partida…"
+        }
+      />
     );
-  if (consulta.error)
+  if (consulta.noEncontrado)
+    return (
+      <Vacio
+        titulo="Partida no disponible"
+        texto="Puede que se haya eliminado. Vuelve a tu historial para elegir otra."
+        accion={
+          <Link className="boton" to="/partidas">
+            Ir a mis partidas
+          </Link>
+        }
+      />
+    );
+  if (consulta.error || !consulta.datos)
     return (
       <>
         <Encabezado
           etiqueta="UN PASO MÁS EN TU AVENTURA"
-          titulo="Registrar partida"
+          titulo={titulo}
           texto="Elige tu juego y registra tu sesión."
         />
         <Fallo mensaje={consulta.error} reintentar={consulta.recargar} />
       </>
     );
-  if (!consulta.datos?.length)
+  if (!consulta.datos.juegos.length)
     return (
       <Vacio
         titulo="Primero necesitas un videojuego"
@@ -40,9 +84,10 @@ export function PartidaFormulario() {
     );
   return (
     <Formulario
-      key={seleccionado}
-      juegos={consulta.datos}
+      key={id ?? seleccionado}
+      juegos={consulta.datos.juegos}
       seleccionado={seleccionado}
+      inicial={consulta.datos.partida}
     />
   );
 }
@@ -50,23 +95,27 @@ export function PartidaFormulario() {
 function Formulario({
   juegos,
   seleccionado,
+  inicial,
 }: {
   juegos: Videojuego[];
   seleccionado: string;
+  inicial: Partida | null;
 }) {
   const navegar = useNavigate();
-  const juegoInicial =
-    juegos.find((juego) => juego._id === seleccionado)?._id ?? "";
+  const juegoInicial = inicial
+    ? idDeJuego(inicial)
+    : (juegos.find((juego) => juego._id === seleccionado)?._id ?? "");
   const [videojuego, setVideojuego] = useState(juegoInicial);
-  const [fecha, setFecha] = useState(() => {
-    const ahora = new Date();
-    return new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000)
-      .toISOString()
-      .slice(0, 16);
-  });
-  const [minutos, setMinutos] = useState("");
-  const [avance, setAvance] = useState("");
-  const [notas, setNotas] = useState("");
+  const [fecha, setFecha] = useState(() =>
+    aCampoLocal(inicial ? new Date(inicial.fecha) : new Date()),
+  );
+  const [minutos, setMinutos] = useState(
+    inicial ? String(inicial.duracionMinutos) : "",
+  );
+  const [avance, setAvance] = useState(
+    inicial ? String(inicial.porcentajeAvance) : "",
+  );
+  const [notas, setNotas] = useState(inicial?.notas ?? "");
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
   const volver = juegoInicial ? `/videojuegos/${juegoInicial}` : "/partidas";
@@ -90,14 +139,16 @@ function Formulario({
       return;
     }
     setGuardando(true);
+    const datos = {
+      videojuego,
+      fecha: instante.toISOString(),
+      duracionMinutos: Number(minutos),
+      porcentajeAvance: Number(avance),
+      notas: notas.trim(),
+    };
     try {
-      await partidasApi.crear({
-        videojuego,
-        fecha: instante.toISOString(),
-        duracionMinutos: Number(minutos),
-        porcentajeAvance: Number(avance),
-        notas: notas.trim(),
-      });
+      if (inicial) await partidasApi.actualizar(inicial._id, datos);
+      else await partidasApi.crear(datos);
       navegar(`/videojuegos/${videojuego}`);
     } catch (fallo) {
       setError(mensajeError(fallo));
@@ -111,8 +162,12 @@ function Formulario({
       </Link>
       <Encabezado
         etiqueta="UN PASO MÁS EN TU AVENTURA"
-        titulo="Registrar partida"
-        texto="Guarda el tiempo que dedicaste y el avance con el que terminaste."
+        titulo={inicial ? "Editar partida" : "Registrar partida"}
+        texto={
+          inicial
+            ? "Corrige la fecha, el tiempo o el avance de esta sesión."
+            : "Guarda el tiempo que dedicaste y el avance con el que terminaste."
+        }
       />
       <form
         className="panel formulario"
@@ -137,7 +192,7 @@ function Formulario({
             </select>
           </label>
           <label>
-            Fecha y hora *
+            Fecha y hora de inicio *
             <input
               required
               type="datetime-local"
@@ -145,7 +200,8 @@ function Formulario({
               onChange={(e) => setFecha(e.target.value)}
             />
             <span className="ayuda">
-              La hora corresponde a la zona horaria de tu dispositivo.
+              La hora corresponde a la zona horaria de tu dispositivo. Si la
+              sesión pasó de medianoche, cuenta en el día en que empezó.
             </span>
           </label>
           <div className="form-grid">
@@ -186,7 +242,8 @@ function Formulario({
           </label>
         </fieldset>
         <div className="aviso informativo">
-          Al guardar volverás al videojuego para ver su resumen actualizado.
+          Al guardar volverás al videojuego para ver su resumen y tu semana
+          actualizados.
         </div>
         {error && <Fallo mensaje={error} />}
         <div className="form-pie">
@@ -194,7 +251,11 @@ function Formulario({
             Cancelar
           </Link>
           <button className="boton" type="submit" disabled={guardando}>
-            {guardando ? "Guardando…" : "Guardar partida"}
+            {guardando
+              ? "Guardando…"
+              : inicial
+                ? "Guardar cambios"
+                : "Guardar partida"}
           </button>
         </div>
       </form>

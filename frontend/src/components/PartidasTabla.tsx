@@ -69,7 +69,14 @@ export function PartidasTabla({
                 </td>
                 <td className="notas">{partida.notas || "Sin notas"}</td>
                 {eliminar && (
-                  <td>
+                  <td className="acciones-fila">
+                    <Link
+                      className="enlace"
+                      to={`/partidas/${partida._id}/editar`}
+                      aria-label={`Editar partida del ${fechaLegible(partida.fecha)}`}
+                    >
+                      Editar
+                    </Link>
                     <button
                       type="button"
                       className="enlace peligro"

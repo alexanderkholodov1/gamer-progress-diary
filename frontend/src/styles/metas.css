@@ -274,3 +274,10 @@ progress.progreso-barra::-moz-progress-bar {
     justify-self: start;
   }
 }
+
+/* Acciones por fila del historial (Editar / Eliminar), T-09 */
+.acciones-fila {
+  display: flex;
+  gap: var(--espacio-4);
+  white-space: nowrap;
+}

@@ -86,6 +86,10 @@ export function App() {
             <Route path="/partidas" element={<PartidasLista />} />
             <Route path="/partidas/nueva" element={<PartidaFormulario />} />
             <Route
+              path="/partidas/:id/editar"
+              element={<PartidaFormulario />}
+            />
+            <Route
               path="*"
               element={
                 <Vacio
