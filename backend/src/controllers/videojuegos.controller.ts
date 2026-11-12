@@ -1,5 +1,6 @@
 import type { RequestHandler } from 'express';
 import * as servicio from '../services/videojuegos.service';
+import { progresoSemanal as calcularProgreso } from '../services/progreso.service';
 
 export const listar: RequestHandler = async (req, res) => {
   const filtros: servicio.Filtros = {};
@@ -29,4 +30,7 @@ export const partidas: RequestHandler = async (req, res) => {
 };
 export const resumen: RequestHandler = async (req, res) => {
   res.json(await servicio.resumen(String(req.params.id)));
+};
+export const progresoSemanal: RequestHandler = async (req, res) => {
+  res.json(await calcularProgreso(String(req.params.id)));
 };

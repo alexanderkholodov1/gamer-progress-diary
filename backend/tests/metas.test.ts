@@ -236,3 +236,101 @@ describe('T-04 · CRUD de metas (HU-2.1, HU-2.2)', () => {
     errorTipo(await request(app).get('/api/videojuegos/no-id/metas'), 400, 'ID_MALFORMADO');
   });
 });
+
+describe('T-05 · GET /api/videojuegos/:id/progreso-semanal (HU-2.3, HU-2.4, HU-2.5)', () => {
+  // Fechas relativas a «ahora» para que la partida siempre caiga en la semana en curso.
+  const haceSegundos = (segundos: number) => new Date(Date.now() - segundos * 1000).toISOString();
+  const registrar = (
+    videojuego: string,
+    segundos: number,
+    duracionMinutos: number,
+    porcentajeAvance: number,
+  ) =>
+    request(app)
+      .post('/api/partidas')
+      .send({ videojuego, fecha: haceSegundos(segundos), duracionMinutos, porcentajeAvance })
+      .expect(201);
+  const progreso = async (id: string) =>
+    (await request(app).get(`/api/videojuegos/${id}/progreso-semanal`).expect(200)).body;
+
+  it('CA-2.3.7 / CA-2.3.6 sin partidas ni meta: ceros, meta null y semana de lunes a domingo', async () => {
+    const juego = await crearJuego();
+    const cuerpo = await progreso(juego._id);
+    expect(cuerpo).toMatchObject({
+      meta: null,
+      horasSemana: 0,
+      porcentajeHoras: null,
+      diasJugadosSemana: 0,
+      metaCumplida: null,
+      rachaActual: 0,
+      mejorRacha: 0,
+      hitos: [],
+    });
+    const { inicio, fin } = cuerpo.semana;
+    expect(new Date(`${inicio}T12:00:00Z`).getUTCDay()).toBe(1);
+    expect(new Date(`${fin}T12:00:00Z`).getUTCDay()).toBe(0);
+  });
+
+  it('CA-2.3.6 sin meta activa calcula igualmente horas, días y racha', async () => {
+    const juego = await crearJuego();
+    await registrar(juego._id, 120, 90, 10);
+    expect(await progreso(juego._id)).toMatchObject({
+      meta: null,
+      horasSemana: 1.5,
+      diasJugadosSemana: 1,
+      rachaActual: 1,
+    });
+  });
+
+  it('con meta: horas, porcentaje, días, racha e hitos ordenados según el avance actual', async () => {
+    const juego = await crearJuego();
+    await crearMeta(juego._id);
+    await registrar(juego._id, 120, 150, 30);
+    expect(await progreso(juego._id)).toMatchObject({
+      meta: { horasSemanales: 5, diasPorSemana: 4 },
+      horasSemana: 2.5,
+      porcentajeHoras: 50,
+      diasJugadosSemana: 1,
+      metaCumplida: false,
+      rachaActual: 1,
+      mejorRacha: 1,
+      hitos: [
+        { descripcion: 'Llegar al 25 %', porcentajeObjetivo: 25, alcanzado: true },
+        { descripcion: 'Terminar el juego', porcentajeObjetivo: 100, alcanzado: false },
+      ],
+    });
+  });
+
+  it('CA-2.5.2 una partida más reciente con menos avance devuelve el hito a pendiente', async () => {
+    const juego = await crearJuego();
+    await crearMeta(juego._id);
+    await registrar(juego._id, 120, 60, 30);
+    expect((await progreso(juego._id)).hitos[0].alcanzado).toBe(true);
+    await registrar(juego._id, 60, 30, 10);
+    expect((await progreso(juego._id)).hitos[0].alcanzado).toBe(false);
+  });
+
+  it('CA-2.2.1 / CA-2.3.8 al editar la meta, el porcentaje y el cumplimiento usan la meta nueva', async () => {
+    const juego = await crearJuego();
+    const meta = await crearMeta(juego._id);
+    await registrar(juego._id, 120, 150, 30);
+    await request(app)
+      .patch(`/api/metas/${meta._id}`)
+      .send({ horasSemanales: 2.5, diasPorSemana: 1 })
+      .expect(200);
+    expect(await progreso(juego._id)).toMatchObject({ porcentajeHoras: 100, metaCumplida: true });
+  });
+
+  it('CA-2.7.3 eliminar una partida recalcula el progreso', async () => {
+    const juego = await crearJuego();
+    const partida = (await registrar(juego._id, 120, 90, 10)).body;
+    expect((await progreso(juego._id)).horasSemana).toBe(1.5);
+    await request(app).delete(`/api/partidas/${partida._id}`).expect(204);
+    expect(await progreso(juego._id)).toMatchObject({ horasSemana: 0, rachaActual: 0 });
+  });
+
+  it('juego inexistente → 404 e id malformado → 400', async () => {
+    errorTipo(await request(app).get(`/api/videojuegos/${idAusente}/progreso-semanal`), 404, 'NO_ENCONTRADO');
+    errorTipo(await request(app).get('/api/videojuegos/no-id/progreso-semanal'), 400, 'ID_MALFORMADO');
+  });
+});

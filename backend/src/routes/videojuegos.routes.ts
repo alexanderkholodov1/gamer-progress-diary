@@ -8,6 +8,7 @@ videojuegosRouter.post('/', controlador.crear);
 videojuegosRouter.get('/:id/resumen', controlador.resumen);
 videojuegosRouter.get('/:id/partidas', controlador.partidas);
 videojuegosRouter.get('/:id/metas', metas.listarDeVideojuego);
+videojuegosRouter.get('/:id/progreso-semanal', controlador.progresoSemanal);
 videojuegosRouter.patch('/:id/logros/:logroId', controlador.actualizarLogro);
 videojuegosRouter.get('/:id', controlador.obtener);
 videojuegosRouter.put('/:id', controlador.actualizar);

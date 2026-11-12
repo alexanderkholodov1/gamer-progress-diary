@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seed": "tsx src/scripts/seed.ts",
-    "demo:memoria": "tsx src/scripts/demoMemoria.ts"
+    "demo:memoria": "tsx src/scripts/demoMemoria.ts",
+    "demo:e2": "tsx src/scripts/demoE2.ts"
   },
   "dependencies": {
     "cors": "^2.8.6",
