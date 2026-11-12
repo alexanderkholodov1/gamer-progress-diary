@@ -4,7 +4,7 @@ Evidencia del ticket T-05 (fase 6). Fecha: miércoles 11 de noviembre de 2026, 1
 
 **Entorno:** `npm --prefix backend run demo:e2`, que levanta la API real (mismas rutas, servicios y `errorHandler`) contra un MongoDB en memoria con datos relativos a hoy. No usa `.env` ni Atlas. La verificación contra Render está en [AUDITORIA.md](AUDITORIA.md).
 
-**Datos de prueba de Hades:** 5 días seguidos (31 oct a 4 nov, hora de Ecuador), un hueco de 4 días y luego domingo 8 a las 23:30 (60 min, cruza la medianoche), lunes 9 (90 min) y dos partidas el martes 10 (60 + 60 min). Hoy, miércoles 11, todavía no hay partida.
+**Datos de prueba de Hades:** 5 días seguidos (30 oct a 3 nov a las 19:00, hora de Ecuador; en la salida aparecen en UTC como 31 oct a 4 nov a las 00:00), un hueco de 4 días y luego domingo 8 a las 23:30 (60 min, cruza la medianoche), lunes 9 (90 min) y dos partidas el martes 10 (60 + 60 min). Hoy, miércoles 11, todavía no hay partida.
 
 ## Resumen
 
