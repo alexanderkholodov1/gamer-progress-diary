@@ -334,3 +334,37 @@ describe('T-05 · GET /api/videojuegos/:id/progreso-semanal (HU-2.3, HU-2.4, HU-
     errorTipo(await request(app).get('/api/videojuegos/no-id/progreso-semanal'), 400, 'ID_MALFORMADO');
   });
 });
+
+describe('T-06 · Ciclo de vida de las metas con el videojuego (HU-2.6)', () => {
+  it.each(['completado', 'abandonado'])(
+    'CA-2.6.1 pasar el juego a %s desactiva su meta y la conserva',
+    async (estado) => {
+      const juego = await crearJuego();
+      const meta = await crearMeta(juego._id);
+      await request(app).patch(`/api/videojuegos/${juego._id}`).send({ estado }).expect(200);
+      expect((await request(app).get(`/api/metas/${meta._id}`).expect(200)).body.activa).toBe(false);
+      expect(
+        (await request(app).get(`/api/videojuegos/${juego._id}/progreso-semanal`).expect(200)).body.meta,
+      ).toBeNull();
+    },
+  );
+
+  it.each(['pausado', 'jugando'])('CA-2.6.2 pasar el juego a %s conserva la meta activa', async (estado) => {
+    const juego = await crearJuego({ estado: estado === 'jugando' ? 'pausado' : 'jugando' });
+    const meta = await crearMeta(juego._id);
+    await request(app).put(`/api/videojuegos/${juego._id}`).send({ estado }).expect(200);
+    expect((await request(app).get(`/api/metas/${meta._id}`).expect(200)).body.activa).toBe(true);
+  });
+
+  it('CA-2.6.3 eliminar el juego elimina todas sus metas, sin tocar las de otros juegos', async () => {
+    const juego = await crearJuego();
+    const otro = await crearJuego({ nombre: 'Otro' });
+    const antigua = await crearMeta(juego._id);
+    await request(app).patch(`/api/metas/${antigua._id}/desactivar`).expect(200);
+    await crearMeta(juego._id);
+    await crearMeta(otro._id);
+    await request(app).delete(`/api/videojuegos/${juego._id}`).expect(204);
+    expect(await Meta.countDocuments({ videojuego: juego._id })).toBe(0);
+    expect(await Meta.countDocuments({ videojuego: otro._id })).toBe(1);
+  });
+});

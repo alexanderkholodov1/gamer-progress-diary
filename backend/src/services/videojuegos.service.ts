@@ -1,5 +1,6 @@
 import { Videojuego } from '../models/Videojuego';
 import { Partida } from '../models/Partida';
+import { Meta } from '../models/Meta';
 import { HttpError } from '../errors';
 import { camposPermitidos, validarId } from './helpers';
 
@@ -38,13 +39,19 @@ export async function crear(datos: unknown) {
 export async function actualizar(id: string, datos: unknown) {
   const juego = await obtener(id);
   juego.set(camposPermitidos(datos, campos));
-  return juego.save();
+  const guardado = await juego.save();
+  // RN-12: un juego completado o abandonado no conserva una meta activa; queda en el historial.
+  if (['completado', 'abandonado'].includes(guardado.estado)) {
+    await Meta.updateMany({ videojuego: guardado._id, activa: true }, { activa: false });
+  }
+  return guardado;
 }
 
 export async function eliminar(id: string) {
   const juego = await obtener(id);
-  // Se eliminan sus sesiones para no dejar referencias huérfanas.
+  // Se eliminan sus sesiones y sus metas para no dejar referencias huérfanas (RN-13).
   await Partida.deleteMany({ videojuego: juego._id });
+  await Meta.deleteMany({ videojuego: juego._id });
   await juego.deleteOne();
 }
 
