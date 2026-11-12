@@ -72,3 +72,22 @@ test("CA-F.1 cada variable que usa metas.css existe en tokens.css", async () => 
     [],
   );
 });
+
+// D-3 · Colores de styles.css desde tokens (spec 03, sección 4).
+test("CA-D3.1 styles.css no tiene colores literales", async () => {
+  assert.deepEqual(coloresLiterales(await leer("../src/styles.css")), []);
+});
+
+test("CA-D3.2 styles.css ya no define ni usa las variables antiguas de E1", async () => {
+  const css = await leer("../src/styles.css");
+  const antiguas =
+    /var\(--(?:primario|primario-oscuro|suave|borde|blanco|radio)\)|^\s*--(?:primario|primario-oscuro|suave|borde|blanco|radio):/gm;
+  assert.deepEqual(css.match(antiguas) ?? [], []);
+});
+
+test("CA-D3.3 cada variable que usa styles.css existe en tokens.css", async () => {
+  assert.deepEqual(
+    await variablesInexistentes(await leer("../src/styles.css")),
+    [],
+  );
+});
