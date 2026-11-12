@@ -1,0 +1,75 @@
+/* Tokens de diseño definidos en DESIGN.md. Única fuente de colores, fuentes, espacios y radios. */
+:root {
+  /* Marca y progreso */
+  --color-primario: #4b52db;
+  --color-primario-oscuro: #373db0;
+  --color-primario-suave: #eeefff;
+  --color-primario-borde: #dfe2fb;
+  --color-primario-texto: #353c8d;
+  --color-barra: #6269da;
+  --color-pista: #d9ddf7;
+  --color-foco: #6269da;
+
+  /* Texto */
+  --color-texto: #252b3b;
+  --color-texto-medio: #4e566c;
+  --color-texto-secundario: #687084;
+  --color-sobre-primario: #ffffff;
+
+  /* Superficies y bordes */
+  --color-fondo: #f7f8fc;
+  --color-superficie: #ffffff;
+  --color-superficie-hundida: #eceff6;
+  --color-borde: #e5e8f0;
+  --color-borde-fuerte: #bdc2d6;
+  --color-borde-campo: #858ca0;
+
+  /* Estados */
+  --color-exito: #287152;
+  --color-exito-fondo: #e9f7f0;
+  --color-exito-borde: #deeee4;
+  --color-aviso: #8c5d17;
+  --color-aviso-fondo: #fff4df;
+  --color-error: #ae3546;
+  --color-error-texto: #8e2f42;
+  --color-error-fondo: #fff2f4;
+  --color-error-borde: #f0ccd4;
+
+  /* Tonos decorativos de las tarjetas de la biblioteca */
+  --tono-1-fondo: #e8e9fc;
+  --tono-1-texto: #666cb7;
+  --tono-2-fondo: #e3f0eb;
+  --tono-2-texto: #4f8374;
+  --tono-3-fondo: #f8eade;
+  --tono-3-texto: #ad7c50;
+  --tono-4-fondo: #e4edf6;
+  --tono-4-texto: #517a9d;
+  --color-velo: rgb(255 255 255 / 25%);
+  --sombra-tarjeta: 0 10px 26px rgb(36 44 87 / 6%);
+
+  /* Tipografía */
+  --fuente-titulos: "Manrope", system-ui, sans-serif;
+  --fuente-texto: "DM Sans", system-ui, sans-serif;
+  --texto-mini: 0.75rem;
+  --texto-chico: 0.82rem;
+  --texto-base: 0.9rem;
+  --texto-titulo-seccion: 1.1rem;
+  --texto-cifra: 2.1rem;
+
+  /* Espacio */
+  --espacio-1: 4px;
+  --espacio-2: 8px;
+  --espacio-3: 12px;
+  --espacio-4: 16px;
+  --espacio-5: 24px;
+  --espacio-6: 32px;
+  --espacio-7: 48px;
+
+  /* Forma */
+  --radio-chip: 6px;
+  --radio-control: 9px;
+  --radio-aviso: 12px;
+  --radio-tarjeta: 16px;
+  --radio-pildora: 999px;
+  --alto-tactil: 44px;
+}
