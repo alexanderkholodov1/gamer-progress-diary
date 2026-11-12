@@ -12,7 +12,16 @@ const etiquetas: Record<string, string> = {
   duracionMinutos: 'duración en minutos',
   porcentajeAvance: 'porcentaje de avance',
   obtenido: 'obtenido',
+  horasSemanales: 'horas por semana',
+  diasPorSemana: 'días por semana',
+  hitos: 'hitos',
+  descripcion: 'descripción del hito',
+  porcentajeObjetivo: 'porcentaje objetivo del hito',
 };
+
+// Clave duplicada de MongoDB: hoy solo la produce el índice de una meta activa por videojuego.
+const esClaveDuplicada = (err: unknown) =>
+  !!err && typeof err === 'object' && 'code' in err && (err as { code?: unknown }).code === 11000;
 
 export const errorHandler: ErrorRequestHandler = (err: unknown, _req, res, _next) => {
   let status = 500;
@@ -37,6 +46,10 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, _req, res, _next
       const campo = etiquetas[error.path.split('.').at(-1) ?? ''] ?? error.path;
       return `El campo «${campo}» es obligatorio o tiene un valor inválido.`;
     });
+  } else if (esClaveDuplicada(err)) {
+    status = 409;
+    tipo = 'CONFLICTO';
+    mensaje = 'Este videojuego ya tiene una meta activa. Edítala o desactívala antes de crear otra.';
   } else if (err instanceof SyntaxError && 'status' in err && err.status === 400) {
     status = 400;
     tipo = 'VALIDACION';
