@@ -94,9 +94,21 @@ Abreviaturas de evidencia: **dom** = `backend/tests/dominio/progreso.test.ts`, *
 
 ## Despliegue
 
+PR [#2](https://github.com/alexanderkholodov1/gamer-progress-diary/pull/2) integrado a `main` (merge commit `5077467`, 20:24). Render no redesplegó solo: el auto-deploy no se disparó y la API siguió respondiendo «No se encontró la ruta solicitada» durante 10 minutos. Hice «Manual Deploy → Deploy latest commit» en los dos servicios y a las 20:48 ambos servían E2. La verificación se hizo con curl contra la API pública conectada a MongoDB Atlas, usando dos juegos temporales que se eliminaron al final. Detalle en [pruebas-api.md](pruebas-api.md#producción-render--atlas).
+
 | Verificación | Cómo | Resultado | Evidencia |
 | --- | --- | --- | --- |
-| API y sitio de Render actualizados con E2 | curl a las URLs públicas después del merge | Pendiente hasta integrar el PR | Se completa en la sección «Producción» al desplegar |
+| API desplegada con E2 | `GET /progreso-semanal` de un juego existente | Cumple | P1: 200, `meta: null` |
+| Frontend desplegado con E2 | El bundle publicado contiene la llamada `progreso-semanal` | Cumple | `/assets/index-CN-SP9wz.js` |
+| Crear meta y 409 por duplicada y por juego completado | curl | Cumple | P2 (201), P3 y P4 (409) |
+| Progreso con meta superada y hitos | curl | Cumple | P7: 2,5 h, 125 %, 1 de 3 días, hito 25 % alcanzado |
+| D-2 en producción | curl con fecha de mañana | Cumple | P6: 400 |
+| 400 y 404 | curl | Cumple | P8, P9 |
+| CORS para las rutas nuevas | Preflight `PATCH` desde el origen del sitio | Cumple | P10: 204 con el origen permitido |
+| Eliminar un juego no deja metas huérfanas | Borrado del juego temporal y `GET` de su meta | Cumple | P12 (204) y P13 (404) |
+| Secretos protegidos | `git ls-files` sin `.env`; variables solo en el panel de Render | Cumple | Ningún `.env` versionado; `.env.example` sin valores |
+
+**Observación.** En P6 el rechazo es correcto (400), pero el detalle dice «El campo «fecha» es obligatorio o tiene un valor inválido.», que es el texto genérico del `errorHandler` de E1, y no el mensaje específico del validador («no puede estar en el futuro»). El formulario del frontend sí muestra el mensaje específico antes de enviar. Queda como deuda menor P-15 en el backlog.
 
 ## Desviaciones detectadas durante la auditoría
 

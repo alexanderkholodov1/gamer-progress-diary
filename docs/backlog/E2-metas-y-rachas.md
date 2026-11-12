@@ -237,10 +237,10 @@ Dependencias: ninguna. Estado: hecho.
 Definition of Done:
 
 - [x] `docs/AUDITORIA.md` con una fila por criterio de cada spec.
-- [ ] Render actualizado con E2 y verificado con curl.
-- [ ] Pull request con los tickets listados y enlace a la auditoría.
+- [x] Render actualizado con E2 y verificado con curl.
+- [x] Pull request con los tickets listados y enlace a la auditoría.
 
-Dependencias: T-01 a T-14. Estado: en curso (auditoría hecha; falta desplegar e integrar el PR).
+Dependencias: T-01 a T-14. Estado: hecho.
 
 ## Orden de ejecución
 
@@ -268,3 +268,4 @@ Problemas de [docs/diagnostico.md](../diagnostico.md).
 | P-11 | Las fechas se capturan y muestran en la zona horaria del dispositivo | Supuesto del PRD: la persona está en Ecuador. Convertir la entrada exige otra regla de producto |
 | P-12 | Espaciados, radios y tamaños literales en el CSS de E1 | D-3 migró los colores, que eran el riesgo de inconsistencia. Los espacios de E1 son coherentes entre sí y migrarlos no cambia la experiencia |
 | P-13 | Arranque en frío de unos 30 s en Render | Es una limitación del plan gratuito, no del código |
+| P-15 | El detalle del 400 por fecha futura es el texto genérico del `errorHandler` («obligatorio o tiene un valor inválido») y no el mensaje del validador | Encontrado en la auditoría de producción. El rechazo es correcto y el formulario ya muestra el mensaje específico; cambiar el `errorHandler` afecta todos los mensajes de E1 y merece su propio criterio |
