@@ -138,6 +138,11 @@ function Formulario({
       );
       return;
     }
+    // D-2: una partida no puede empezar en el futuro (la API también lo valida).
+    if (instante.getTime() > Date.now() + 5 * 60 * 1000) {
+      setError("La fecha de inicio no puede estar en el futuro.");
+      return;
+    }
     setGuardando(true);
     const datos = {
       videojuego,
@@ -196,6 +201,7 @@ function Formulario({
             <input
               required
               type="datetime-local"
+              max={aCampoLocal(new Date())}
               value={fecha}
               onChange={(e) => setFecha(e.target.value)}
             />

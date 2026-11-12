@@ -416,3 +416,42 @@ describe('Cuatro tipos de error y middleware', () => {
     errorTipo(await request(app).get('/api/desconocida'), 404, 'NO_ENCONTRADO');
   });
 });
+
+// D-2 · Partidas sin fecha futura (spec 03, sección 3).
+describe('D-2 · Partidas con fecha futura', () => {
+  const enMinutos = (minutos: number) => new Date(Date.now() + minutos * 60_000).toISOString();
+
+  it('CA-D2.1 crear una partida a más de 5 minutos en el futuro → 400 y no se guarda', async () => {
+    const juego = await crearJuego();
+    errorTipo(
+      await request(app)
+        .post('/api/partidas')
+        .send(sesion(juego._id, { fecha: enMinutos(60 * 24) })),
+      400,
+      'VALIDACION',
+    );
+    expect(await Partida.countDocuments()).toBe(0);
+  });
+
+  it('CA-D2.2 editar a una fecha futura → 400 y conserva la fecha anterior', async () => {
+    const juego = await crearJuego();
+    const partida = (await request(app).post('/api/partidas').send(sesion(juego._id)).expect(201)).body;
+    errorTipo(
+      await request(app)
+        .patch(`/api/partidas/${partida._id}`)
+        .send({ fecha: enMinutos(30) }),
+      400,
+      'VALIDACION',
+    );
+    expect((await request(app).get(`/api/partidas/${partida._id}`).expect(200)).body.fecha).toBe(
+      partida.fecha,
+    );
+  });
+
+  it('CA-D2.3 acepta la hora actual, un reloj adelantado hasta 5 minutos y fechas pasadas', async () => {
+    const juego = await crearJuego();
+    for (const fecha of [enMinutos(0), enMinutos(4), enMinutos(-60 * 24 * 30)]) {
+      await request(app).post('/api/partidas').send(sesion(juego._id, { fecha })).expect(201);
+    }
+  });
+});

@@ -1,9 +1,19 @@
 import { Schema, model } from 'mongoose';
 
+// D-2 (RN-15): una partida no puede empezar en el futuro. 5 minutos de tolerancia por relojes desfasados.
+export const TOLERANCIA_FUTURO_MS = 5 * 60 * 1000;
+
 const partidaSchema = new Schema(
   {
     videojuego: { type: Schema.Types.ObjectId, ref: 'Videojuego', required: true, index: true },
-    fecha: { type: Date, required: [true, 'La fecha es obligatoria.'] },
+    fecha: {
+      type: Date,
+      required: [true, 'La fecha es obligatoria.'],
+      validate: {
+        validator: (fecha: Date) => fecha.getTime() <= Date.now() + TOLERANCIA_FUTURO_MS,
+        message: 'La fecha de la partida no puede estar en el futuro.',
+      },
+    },
     duracionMinutos: {
       type: Number,
       required: true,
