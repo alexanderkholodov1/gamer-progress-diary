@@ -7,6 +7,7 @@ import { logger } from './middleware/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { videojuegosRouter } from './routes/videojuegos.routes';
 import { partidasRouter } from './routes/partidas.routes';
+import { metasRouter } from './routes/metas.routes';
 import { HttpError } from './errors';
 
 export const app = express();
@@ -20,6 +21,7 @@ app.get('/api/health', (_req, res) => {
 });
 app.use('/api/videojuegos', videojuegosRouter);
 app.use('/api/partidas', partidasRouter);
+app.use('/api/metas', metasRouter);
 app.use((_req, _res, next) =>
   next(new HttpError(404, 'No se encontró la ruta solicitada.', 'NO_ENCONTRADO')),
 );
