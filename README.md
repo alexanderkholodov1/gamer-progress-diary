@@ -332,5 +332,5 @@ Proyecto desplegado en Render, con el frontend y el backend comunicados en produ
 - Repositorio GitHub: https://github.com/alexanderkholodov1/gamer-progress-diary
 - Pull request integrado (E1, Entregable 3): https://github.com/alexanderkholodov1/gamer-progress-diary/pull/1
 - Pull request integrado (E2 · Metas y rachas, Entregable 4): https://github.com/alexanderkholodov1/gamer-progress-diary/pull/2
-- Demo en vivo o grabada (Entregable 3): https://youtu.be/odiBlS8cl-g.
-- Progreso semanal en producción (E2): `https://gamer-progress-diary-api.onrender.com/api/videojuegos/<id>/progreso-semanal`.
+- Demo 1 (Entregable 3): https://youtu.be/odiBlS8cl-g.
+- Demo 2 (Entregable 4): https://youtu.be/4AdP3LgoAqQ
