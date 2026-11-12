@@ -95,3 +95,77 @@ $ curl -s -w "\nHTTP %{http_code}" http://localhost:3000/api/videojuegos/6af50c2
 HTTP 200
 
 ```
+
+
+## Producción (Render + Atlas)
+
+Miércoles 11 de noviembre de 2026, 20:49 (hora de Ecuador), después del merge del PR #2 y del deploy manual en Render. Los juegos temporales se crearon solo para la prueba y se eliminaron al final (P12).
+
+```text
+### P1. Progreso de un juego existente sin meta
+$ curl -s -w "\nHTTP %{http_code}" https://gamer-progress-diary-api.onrender.com/api/videojuegos/6adc22910c4fd6ae2350dd22/progreso-semanal
+{"semana":{"inicio":"2026-11-09","fin":"2026-11-15"},"meta":null,"horasSemana":0,"porcentajeHoras":null,"diasJugadosSemana":0,"metaCumplida":null,"rachaActual":0,"mejorRacha":1,"hitos":[]}
+HTTP 200
+
+Juegos temporales: 6af51b0f321de400267b0d3a (jugando), 6af51b0f321de400267b0d3c (completado)
+
+### P2. Crear meta con hitos
+$ curl -s -w "\nHTTP %{http_code}" -X POST https://gamer-progress-diary-api.onrender.com/api/metas -H 'Content-Type: application/json' -d '{"videojuego":"6af51b0f321de400267b0d3a","horasSemanales":2,"diasPorSemana":3,"hitos":[{"descripcion":"Terminar","porcentajeObjetivo":100},{"descripcion":"Llegar al 25 %","porcentajeObjetivo":25}]}'
+{"videojuego":"6af51b0f321de400267b0d3a","horasSemanales":2,"diasPorSemana":3,"activa":true,"hitos":[{"descripcion":"Terminar","porcentajeObjetivo":100,"_id":"6af51b10321de400267b0d3f"},{"descripcion":"Llegar al 25 %","porcentajeObjetivo":25,"_id":"6af51b10321de400267b0d40"}],"_id":"6af51b10321de400267b0d3e","createdAt":"2026-11-12T01:49:04.761Z","updatedAt":"2026-11-12T01:49:04.761Z","__v":0}
+HTTP 201
+
+### P3. 409: segunda meta activa
+$ curl -s -w "\nHTTP %{http_code}" -X POST https://gamer-progress-diary-api.onrender.com/api/metas -H 'Content-Type: application/json' -d '{"videojuego":"6af51b0f321de400267b0d3a","horasSemanales":4,"diasPorSemana":2}'
+{"error":{"tipo":"CONFLICTO","mensaje":"Este videojuego ya tiene una meta activa. Edítala o desactívala antes de crear otra.","requestId":"00d501d1-ede0-4fa0-b340-2d591ffc38e3"}}
+HTTP 409
+
+### P4. 409: juego completado
+$ curl -s -w "\nHTTP %{http_code}" -X POST https://gamer-progress-diary-api.onrender.com/api/metas -H 'Content-Type: application/json' -d '{"videojuego":"6af51b0f321de400267b0d3c","horasSemanales":4,"diasPorSemana":2}'
+{"error":{"tipo":"CONFLICTO","mensaje":"Un videojuego completado no puede tener una meta activa. Cámbialo a «jugando» o «pausado» primero.","requestId":"d4b33c4a-64f5-4fa8-9848-ff3e61c4a45a"}}
+HTTP 409
+
+### P5. Registrar partida de 150 min y 30 %
+$ curl -s -o /dev/null -w 'HTTP %{http_code}' -X POST https://gamer-progress-diary-api.onrender.com/api/partidas -H 'Content-Type: application/json' -d '{"videojuego":"6af51b0f321de400267b0d3a","fecha":"2026-11-12T01:39:07.465Z","duracionMinutos":150,"porcentajeAvance":30}'
+HTTP 201
+
+### P6. 400 (D-2): partida con fecha futura
+$ curl -s -w "\nHTTP %{http_code}" -X POST https://gamer-progress-diary-api.onrender.com/api/partidas -H 'Content-Type: application/json' -d '{"videojuego":"6af51b0f321de400267b0d3a","fecha":"2026-11-13T01:49:07.550Z","duracionMinutos":60,"porcentajeAvance":40}'
+{"error":{"tipo":"VALIDACION","mensaje":"Revisa los datos del formulario.","detalles":["El campo «fecha» es obligatorio o tiene un valor inválido."],"requestId":"7e4d7fc4-3785-4647-9455-919e73b4d588"}}
+HTTP 400
+
+### P7. Progreso con meta: 2,5 h de 2 h (125 %, meta superada), 1 de 3 días, hito 25 % alcanzado
+$ curl -s -w "\nHTTP %{http_code}" https://gamer-progress-diary-api.onrender.com/api/videojuegos/6af51b0f321de400267b0d3a/progreso-semanal
+{"semana":{"inicio":"2026-11-09","fin":"2026-11-15"},"meta":{"horasSemanales":2,"diasPorSemana":3},"horasSemana":2.5,"porcentajeHoras":125,"diasJugadosSemana":1,"metaCumplida":false,"rachaActual":1,"mejorRacha":1,"hitos":[{"descripcion":"Llegar al 25 %","porcentajeObjetivo":25,"alcanzado":true},{"descripcion":"Terminar","porcentajeObjetivo":100,"alcanzado":false}]}
+HTTP 200
+
+### P8. 400: id malformado
+$ curl -s -w "\nHTTP %{http_code}" https://gamer-progress-diary-api.onrender.com/api/videojuegos/no-id/progreso-semanal
+{"error":{"tipo":"ID_MALFORMADO","mensaje":"El identificador o valor enviado tiene un formato inválido.","requestId":"d7609670-f197-4205-8038-1159dc0eebd8"}}
+HTTP 400
+
+### P9. 404: juego inexistente
+$ curl -s -w "\nHTTP %{http_code}" https://gamer-progress-diary-api.onrender.com/api/videojuegos/000000000000000000000000/progreso-semanal
+{"error":{"tipo":"NO_ENCONTRADO","mensaje":"No se encontró el videojuego.","requestId":"609c0d53-0dda-4295-b134-68aa90ecaf62"}}
+HTTP 404
+
+### P10. CORS: preflight PATCH /metas desde el sitio
+$ curl -s -o /dev/null -D - -X OPTIONS https://gamer-progress-diary-api.onrender.com/api/metas/6af51b10321de400267b0d3e/desactivar -H 'Origin: https://gamer-progress-diary-web.onrender.com' -H 'Access-Control-Request-Method: PATCH' -H 'Access-Control-Request-Headers: content-type' | grep -iE '^(HTTP|access-control-allow-(origin|methods))'
+HTTP/1.1 204 No Content
+access-control-allow-methods: GET,HEAD,PUT,PATCH,POST,DELETE
+access-control-allow-origin: https://gamer-progress-diary-web.onrender.com
+
+
+### P11. Desactivar la meta
+$ curl -s -w '\nHTTP %{http_code}' -X PATCH https://gamer-progress-diary-api.onrender.com/api/metas/6af51b10321de400267b0d3e/desactivar | tail -c 60
+1Z","updatedAt":"2026-11-12T01:49:10.312Z","__v":0}
+HTTP 200
+
+### P12. Limpieza: eliminar los juegos temporales (y sus metas)
+$ curl -s -o /dev/null -w 'HTTP %{http_code} ' -X DELETE https://gamer-progress-diary-api.onrender.com/api/videojuegos/6af51b0f321de400267b0d3a; curl -s -o /dev/null -w 'HTTP %{http_code}' -X DELETE https://gamer-progress-diary-api.onrender.com/api/videojuegos/6af51b0f321de400267b0d3c
+HTTP 204 HTTP 204
+
+### P13. La meta ya no existe (sin huérfanas, RN-13)
+$ curl -s -w "\nHTTP %{http_code}" https://gamer-progress-diary-api.onrender.com/api/metas/6af51b10321de400267b0d3e
+{"error":{"tipo":"NO_ENCONTRADO","mensaje":"No se encontró la meta.","requestId":"d87df3bd-c4b1-42a5-af3b-a2fceddbe8c0"}}
+HTTP 404
+```
