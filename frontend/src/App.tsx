@@ -12,6 +12,7 @@ import { VideojuegoDetalle } from "./pages/VideojuegoDetalle";
 import { VideojuegoFormulario } from "./pages/VideojuegoFormulario";
 import { PartidasLista } from "./pages/PartidasLista";
 import { PartidaFormulario } from "./pages/PartidaFormulario";
+import { MetaFormulario } from "./pages/MetaFormulario";
 import { Vacio } from "./components/Estados";
 
 export function App() {
@@ -83,6 +84,7 @@ export function App() {
               path="/videojuegos/:id/editar"
               element={<VideojuegoFormulario />}
             />
+            <Route path="/videojuegos/:id/meta" element={<MetaFormulario />} />
             <Route path="/partidas" element={<PartidasLista />} />
             <Route path="/partidas/nueva" element={<PartidaFormulario />} />
             <Route
