@@ -5,7 +5,48 @@
 El Diario de Progreso Gamer permite a cada estudiante controlar los videojuegos que posee o está jugando, registrar sus partidas y consultar un resumen calculado de su progreso real. Responde la pregunta: **«¿qué estoy jugando ahora, cuánto le he dedicado, y qué tan avanzado voy?»**. La ficha reúne los datos y logros del juego; cada sesión aporta su fecha, duración y avance al resumen que calcula el backend.
 
 **Alexander · Universidad San Francisco de Quito · Desarrollo Web 3**  
-Entregable 3 · Fecha límite: **23 de octubre de 2026, 23:59 (Ecuador)**.
+Entregable 3 · Fecha límite: **23 de octubre de 2026, 23:59 (Ecuador)**.  
+Entregable 4 (Diario 2.0, épica E2 · Metas y rachas) · Fecha límite: **11 de noviembre de 2026, 23:59 (Ecuador)**.
+
+## Épica E2 · Metas y rachas (Entregable 4)
+
+La versión 2.0 responde una segunda pregunta: **«¿estoy cumpliendo lo que me propuse esta semana y cuántos días seguidos llevo jugando?»**. Cada videojuego puede tener una meta activa (horas y días por semana) con hasta 5 hitos de avance, y el detalle del juego muestra el progreso de la semana (lunes a domingo, hora de Ecuador), la racha actual, la mejor racha y los hitos alcanzados. Las reglas de negocio, incluidos los ocho huecos de la ficha del cliente, están en el [PRD](docs/prd/diario-gamer-prd.md).
+
+- **Backend:** modelo `Meta` referenciado con hitos embebidos, CRUD en `/api/metas`, 409 para una segunda meta activa o un juego completado/abandonado, y `GET /api/videojuegos/:id/progreso-semanal`, calculado con funciones puras en `backend/src/dominio/`.
+- **Frontend:** sección «Tu semana de juego» en el detalle, formulario de meta con hitos, desactivación con confirmación en línea, edición de partidas y servicio `src/api/metasApi.ts`.
+- **Demo local sin Atlas:** `npm --prefix backend run demo:e2` levanta la API con MongoDB en memoria y datos de prueba (juego sin partidas, juego con racha rota, juego completado y meta superada).
+
+## Cómo trabajamos con el agente
+
+La épica E2 se construyó con Claude Code siguiendo Spec-Driven Development: **diagnóstico → harness → PRD → épica → historias → criterios → tickets → specs → código con tests → auditoría**. Cada documento se commiteó antes que el código que lo implementa, y cada commit de implementación nombra su ticket (`feat(E2): T-05 …`).
+
+**Harness del agente**
+
+| Pieza | Archivo | Qué hace |
+| --- | --- | --- |
+| Memoria del proyecto | [`AGENTS.md`](AGENTS.md) (49 líneas) y [`CLAUDE.md`](CLAUDE.md) (`@AGENTS.md`) | Proyecto, stack, estructura, comandos, convenciones y reglas: nunca tocar `.env`, nada sin spec, tests antes de terminar |
+| Skill `/commit` | [`.claude/skills/commit/SKILL.md`](.claude/skills/commit/SKILL.md) | Conventional Commits en español con el ticket; se detiene si hay secretos o si falta la spec. `disable-model-invocation: true` |
+| Skill `/nueva-spec` | [`.claude/skills/nueva-spec/SKILL.md`](.claude/skills/nueva-spec/SKILL.md) | Redacta una spec con reglas DEBE/NO DEBE y las tablas criterio → verificación y ticket → archivos |
+| Hook PostToolUse | [`.claude/hooks/formatear.mjs`](.claude/hooks/formatear.mjs) | Formatea con Prettier cada archivo que el agente crea o edita |
+| Hook PreToolUse | [`.claude/hooks/proteger-env.mjs`](.claude/hooks/proteger-env.mjs) | Bloquea leer, editar o mencionar `.env` en Read, Edit, Write, Grep y Bash (permite `.env.example`) |
+| Sistema de diseño | [`DESIGN.md`](DESIGN.md) + [`frontend/src/styles/tokens.css`](frontend/src/styles/tokens.css) | Colores, tipografía, espacio, componentes, tono, accesibilidad y «no hacemos». Un test verifica que los tokens coinciden con DESIGN.md |
+
+Configuración en [`.claude/settings.json`](.claude/settings.json). Para comprobarla se abre Claude Code dentro del repositorio y se usa `/hooks` y `/`.
+
+**Dónde está cada documento**
+
+| Fase | Documento |
+| --- | --- |
+| 1. Diagnóstico | [docs/diagnostico.md](docs/diagnostico.md) |
+| 3. Producto | [docs/prd/diario-gamer-prd.md](docs/prd/diario-gamer-prd.md), [docs/backlog/epicas.md](docs/backlog/epicas.md) |
+| 4. Backlog | [docs/backlog/E2-metas-y-rachas.md](docs/backlog/E2-metas-y-rachas.md) (historias, criterios, tickets y deuda técnica) |
+| 5. Specs | [01 backend](docs/specs/01-backend-metas-progreso.md), [02 frontend](docs/specs/02-frontend-metas-progreso.md), [03 deuda técnica](docs/specs/03-deuda-tecnica.md) |
+| 6. Pruebas de la API | [docs/pruebas-api.md](docs/pruebas-api.md) |
+| 7. Interfaz y diseño | [docs/pruebas-frontend.md](docs/pruebas-frontend.md), [docs/revision-diseno.md](docs/revision-diseno.md) |
+| 9. Auditoría | [docs/AUDITORIA.md](docs/AUDITORIA.md) |
+| Bitácora | [docs/bitacora-agente.md](docs/bitacora-agente.md) (8 momentos, aciertos y desvíos) |
+
+**Trazabilidad de un criterio de punta a punta (ejemplo para la demo):** RN-09 «racha viva si ayer hubo partida» en el [PRD](docs/prd/diario-gamer-prd.md) → CA-2.4.2 en la [historia HU-2.4](docs/backlog/E2-metas-y-rachas.md) → ticket T-03 → regla DEBE en la [spec 01](docs/specs/01-backend-metas-progreso.md) → test «si hoy aún no hay partida pero ayer sí…» en `backend/tests/dominio/progreso.test.ts` → `calcularRachas` en `backend/src/dominio/progreso.ts` → fila CA-2.4.2 en la [auditoría](docs/AUDITORIA.md).
 
 ## Ramas e integración
 
@@ -226,6 +267,12 @@ Base local: `http://localhost:3000/api`. POST devuelve 201, DELETE 204, las dem�
 | PATCH | `/videojuegos/:id/logros/:logroId` | Actualizar con `{ "obtenido": true }` o false |
 | GET | `/videojuegos/:id/partidas` | Historial del videojuego, fecha descendente |
 | GET | `/videojuegos/:id/resumen` | Resumen calculado con los cuatro campos de la consigna |
+| GET | `/videojuegos/:id/progreso-semanal` | **E2.** Semana, meta, horas, porcentaje, días, meta cumplida, racha actual, mejor racha e hitos |
+| GET | `/videojuegos/:id/metas?activa=` | **E2.** Metas del juego, de la más reciente a la más antigua |
+| POST | `/metas` | **E2.** Crear meta (404 juego inexistente, 409 meta activa existente o juego completado/abandonado) |
+| GET | `/metas/:id` | **E2.** Obtener una meta |
+| PUT / PATCH | `/metas/:id` | **E2.** Editar horas, días e hitos de la meta activa (409 si está desactivada) |
+| PATCH | `/metas/:id/desactivar` | **E2.** Desactivar la meta (definitivo) |
 | GET | `/partidas` | Listar todas, con populate del videojuego |
 | GET | `/partidas/:id` | Obtener una, con populate |
 | POST | `/partidas` | Crear, comprobando referencia existente |

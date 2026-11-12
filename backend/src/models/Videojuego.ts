@@ -9,22 +9,29 @@ const logroSchema = new Schema({
   obtenido: { type: Boolean, required: true, default: false },
 });
 
-const videojuegoSchema = new Schema({
-  nombre: { type: String, required: [true, 'El nombre del videojuego es obligatorio.'], trim: true },
-  plataforma: { type: String, enum: plataformas, required: true },
-  genero: { type: String, enum: generos, required: true },
-  estado: { type: String, enum: estados, required: true, default: 'jugando' },
-  logros: {
-    type: [logroSchema], default: [], required: true,
-    set: (valor: unknown) => {
-      if (valor != null && !Array.isArray(valor)) throw new MongooseError.CastError('Array', valor, 'logros');
-      return valor;
-    },
-    validate: {
-      validator: (logros: unknown[]) => Array.isArray(logros) && logros.length <= 50 && logros.every(logro => logro !== null),
-      message: 'Los logros deben ser una lista de hasta 50 subdocumentos no nulos.',
+const videojuegoSchema = new Schema(
+  {
+    nombre: { type: String, required: [true, 'El nombre del videojuego es obligatorio.'], trim: true },
+    plataforma: { type: String, enum: plataformas, required: true },
+    genero: { type: String, enum: generos, required: true },
+    estado: { type: String, enum: estados, required: true, default: 'jugando' },
+    logros: {
+      type: [logroSchema],
+      default: [],
+      required: true,
+      set: (valor: unknown) => {
+        if (valor != null && !Array.isArray(valor))
+          throw new MongooseError.CastError('Array', valor, 'logros');
+        return valor;
+      },
+      validate: {
+        validator: (logros: unknown[]) =>
+          Array.isArray(logros) && logros.length <= 50 && logros.every((logro) => logro !== null),
+        message: 'Los logros deben ser una lista de hasta 50 subdocumentos no nulos.',
+      },
     },
   },
-}, { timestamps: true });
+  { timestamps: true },
+);
 
 export const Videojuego = model('Videojuego', videojuegoSchema);

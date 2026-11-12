@@ -6,9 +6,13 @@ import { conectarDB } from './conexionDB';
 async function iniciar() {
   validarEntorno();
   await conectarDB();
-  const servidor = app.listen(env.PORT, '0.0.0.0', () => console.info(`API disponible en el puerto ${env.PORT}.`));
+  const servidor = app.listen(env.PORT, '0.0.0.0', () =>
+    console.info(`API disponible en el puerto ${env.PORT}.`),
+  );
   const detener = () => {
-    servidor.close(() => { void mongoose.disconnect().then(() => process.exit(0)); });
+    servidor.close(() => {
+      void mongoose.disconnect().then(() => process.exit(0));
+    });
   };
   process.once('SIGTERM', detener);
   process.once('SIGINT', detener);

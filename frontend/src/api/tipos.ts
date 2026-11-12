@@ -85,3 +85,43 @@ export interface Filtros {
   genero?: string;
   estado?: string;
 }
+
+// Épica E2 · Metas y rachas (spec 02). Mismos nombres de campo que la API.
+export interface HitoEntrada {
+  _id?: string;
+  descripcion: string;
+  porcentajeObjetivo: number;
+}
+export interface Hito extends HitoEntrada {
+  _id: string;
+}
+export interface MetaEntrada {
+  videojuego: string;
+  horasSemanales: number;
+  diasPorSemana: number;
+  hitos: HitoEntrada[];
+}
+export type MetaCambios = Partial<Omit<MetaEntrada, "videojuego">>;
+export interface Meta extends Omit<MetaEntrada, "hitos"> {
+  _id: string;
+  activa: boolean;
+  hitos: Hito[];
+  createdAt: string;
+  updatedAt: string;
+}
+export interface HitoEvaluado {
+  descripcion: string;
+  porcentajeObjetivo: number;
+  alcanzado: boolean;
+}
+export interface ProgresoSemanal {
+  semana: { inicio: string; fin: string };
+  meta: { horasSemanales: number; diasPorSemana: number } | null;
+  horasSemana: number;
+  porcentajeHoras: number | null;
+  diasJugadosSemana: number;
+  metaCumplida: boolean | null;
+  rachaActual: number;
+  mejorRacha: number;
+  hitos: HitoEvaluado[];
+}

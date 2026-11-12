@@ -9,8 +9,21 @@ import { sembrarDemo } from '../src/scripts/datosDemo';
 
 let memoria: MongoMemoryServer;
 const idAusente = new mongoose.Types.ObjectId().toString();
-const ficha = { nombre: 'Celeste', plataforma: 'PC', genero: 'puzzle', estado: 'jugando', logros: [{ nombre: 'Llegar a la cima', obtenido: false }] };
-const sesion = (videojuego: string, extra = {}) => ({ videojuego, fecha: '2026-10-20T18:00:00.000Z', duracionMinutos: 65, porcentajeAvance: 25, notas: 'Primer ascenso.', ...extra });
+const ficha = {
+  nombre: 'Celeste',
+  plataforma: 'PC',
+  genero: 'puzzle',
+  estado: 'jugando',
+  logros: [{ nombre: 'Llegar a la cima', obtenido: false }],
+};
+const sesion = (videojuego: string, extra = {}) => ({
+  videojuego,
+  fecha: '2026-10-20T18:00:00.000Z',
+  duracionMinutos: 65,
+  porcentajeAvance: 25,
+  notas: 'Primer ascenso.',
+  ...extra,
+});
 const crearJuego = async () => (await request(app).post('/api/videojuegos').send(ficha).expect(201)).body;
 const errorTipo = (respuesta: request.Response, status: number, tipo: string) => {
   expect(respuesta.status).toBe(status);
@@ -29,7 +42,10 @@ beforeEach(async () => {
   await Promise.all([Videojuego.deleteMany({}), Partida.deleteMany({})]);
 });
 afterEach(() => vi.restoreAllMocks());
-afterAll(async () => { await mongoose.disconnect(); await memoria?.stop(); });
+afterAll(async () => {
+  await mongoose.disconnect();
+  await memoria?.stop();
+});
 
 describe('Videojuegos: CRUD, filtros y subdocumentos', () => {
   it('lista vacía y creación con timestamps y logros embebidos', async () => {
@@ -43,26 +59,63 @@ describe('Videojuegos: CRUD, filtros y subdocumentos', () => {
   });
   it('filtra por nombre, plataforma, género y estado', async () => {
     await crearJuego();
-    await request(app).post('/api/videojuegos').send({ ...ficha, nombre: 'Portal', plataforma: 'Switch', estado: 'completado' }).expect(201);
-    expect((await request(app).get('/api/videojuegos?nombre=CELE&plataforma=PC&genero=puzzle&estado=jugando').expect(200)).body).toHaveLength(1);
+    await request(app)
+      .post('/api/videojuegos')
+      .send({ ...ficha, nombre: 'Portal', plataforma: 'Switch', estado: 'completado' })
+      .expect(201);
+    expect(
+      (
+        await request(app)
+          .get('/api/videojuegos?nombre=CELE&plataforma=PC&genero=puzzle&estado=jugando')
+          .expect(200)
+      ).body,
+    ).toHaveLength(1);
     expect((await request(app).get('/api/videojuegos?genero=rol').expect(200)).body).toEqual([]);
     expect((await request(app).get('/api/videojuegos').query({ nombre: '.*' }).expect(200)).body).toEqual([]);
   });
   it('actualiza por PUT y PATCH y vuelve a validar', async () => {
     const juego = await crearJuego();
-    expect((await request(app).put(`/api/videojuegos/${juego._id}`).send({ ...ficha, nombre: 'Celeste 2' }).expect(200)).body.nombre).toBe('Celeste 2');
-    expect((await request(app).patch(`/api/videojuegos/${juego._id}`).send({ estado: 'completado' }).expect(200)).body.estado).toBe('completado');
-    errorTipo(await request(app).put(`/api/videojuegos/${juego._id}`).send({ estado: 'ilegal' }), 400, 'VALIDACION');
+    expect(
+      (
+        await request(app)
+          .put(`/api/videojuegos/${juego._id}`)
+          .send({ ...ficha, nombre: 'Celeste 2' })
+          .expect(200)
+      ).body.nombre,
+    ).toBe('Celeste 2');
+    expect(
+      (await request(app).patch(`/api/videojuegos/${juego._id}`).send({ estado: 'completado' }).expect(200))
+        .body.estado,
+    ).toBe('completado');
+    errorTipo(
+      await request(app).put(`/api/videojuegos/${juego._id}`).send({ estado: 'ilegal' }),
+      400,
+      'VALIDACION',
+    );
   });
   it('marca y desmarca un logro, persistiendo el subdocumento', async () => {
     const juego = await crearJuego();
     const ruta = `/api/videojuegos/${juego._id}/logros/${juego.logros[0]._id}`;
-    expect((await request(app).patch(ruta).send({ obtenido: true }).expect(200)).body.logros[0].obtenido).toBe(true);
-    expect((await request(app).get(`/api/videojuegos/${juego._id}`).expect(200)).body.logros[0].obtenido).toBe(true);
-    expect((await request(app).patch(ruta).send({ obtenido: false }).expect(200)).body.logros[0].obtenido).toBe(false);
+    expect(
+      (await request(app).patch(ruta).send({ obtenido: true }).expect(200)).body.logros[0].obtenido,
+    ).toBe(true);
+    expect(
+      (await request(app).get(`/api/videojuegos/${juego._id}`).expect(200)).body.logros[0].obtenido,
+    ).toBe(true);
+    expect(
+      (await request(app).patch(ruta).send({ obtenido: false }).expect(200)).body.logros[0].obtenido,
+    ).toBe(false);
     errorTipo(await request(app).patch(ruta).send({ obtenido: 'true' }), 400, 'VALIDACION');
-    errorTipo(await request(app).patch(`/api/videojuegos/${juego._id}/logros/${idAusente}`).send({ obtenido: true }), 404, 'NO_ENCONTRADO');
-    errorTipo(await request(app).patch(`/api/videojuegos/${juego._id}/logros/invalido`).send({ obtenido: true }), 400, 'ID_MALFORMADO');
+    errorTipo(
+      await request(app).patch(`/api/videojuegos/${juego._id}/logros/${idAusente}`).send({ obtenido: true }),
+      404,
+      'NO_ENCONTRADO',
+    );
+    errorTipo(
+      await request(app).patch(`/api/videojuegos/${juego._id}/logros/invalido`).send({ obtenido: true }),
+      400,
+      'ID_MALFORMADO',
+    );
   });
   it('elimina el videojuego y sus partidas para evitar huérfanos', async () => {
     const juego = await crearJuego();
@@ -82,15 +135,35 @@ describe('Partidas: CRUD y relación referenciada', () => {
     expect(partida.createdAt).toBeTruthy();
     const lista = (await request(app).get('/api/partidas').expect(200)).body;
     expect(lista[0].videojuego).toMatchObject({ _id: juego._id, nombre: 'Celeste' });
-    expect((await request(app).get(`/api/partidas/${partida._id}`).expect(200)).body.videojuego.nombre).toBe('Celeste');
+    expect((await request(app).get(`/api/partidas/${partida._id}`).expect(200)).body.videojuego.nombre).toBe(
+      'Celeste',
+    );
   });
   it('actualiza por PUT y PATCH, valida la nueva referencia y elimina', async () => {
     const juego = await crearJuego();
     const partida = (await request(app).post('/api/partidas').send(sesion(juego._id)).expect(201)).body;
-    expect((await request(app).put(`/api/partidas/${partida._id}`).send(sesion(juego._id, { duracionMinutos: 90 })).expect(200)).body.duracionMinutos).toBe(90);
-    expect((await request(app).patch(`/api/partidas/${partida._id}`).send({ porcentajeAvance: 40 }).expect(200)).body.porcentajeAvance).toBe(40);
-    errorTipo(await request(app).patch(`/api/partidas/${partida._id}`).send({ videojuego: idAusente }), 404, 'NO_ENCONTRADO');
-    errorTipo(await request(app).patch(`/api/partidas/${partida._id}`).send({ porcentajeAvance: 101 }), 400, 'VALIDACION');
+    expect(
+      (
+        await request(app)
+          .put(`/api/partidas/${partida._id}`)
+          .send(sesion(juego._id, { duracionMinutos: 90 }))
+          .expect(200)
+      ).body.duracionMinutos,
+    ).toBe(90);
+    expect(
+      (await request(app).patch(`/api/partidas/${partida._id}`).send({ porcentajeAvance: 40 }).expect(200))
+        .body.porcentajeAvance,
+    ).toBe(40);
+    errorTipo(
+      await request(app).patch(`/api/partidas/${partida._id}`).send({ videojuego: idAusente }),
+      404,
+      'NO_ENCONTRADO',
+    );
+    errorTipo(
+      await request(app).patch(`/api/partidas/${partida._id}`).send({ porcentajeAvance: 101 }),
+      400,
+      'VALIDACION',
+    );
     await request(app).delete(`/api/partidas/${partida._id}`).expect(204);
     await request(app).get(`/api/partidas/${partida._id}`).expect(404);
   });
@@ -98,7 +171,10 @@ describe('Partidas: CRUD y relación referenciada', () => {
     const juego = await crearJuego();
     const otro = await crearJuego();
     await request(app).post('/api/partidas').send(sesion(juego._id)).expect(201);
-    await request(app).post('/api/partidas').send(sesion(juego._id, { fecha: '2026-10-22T18:00:00.000Z' })).expect(201);
+    await request(app)
+      .post('/api/partidas')
+      .send(sesion(juego._id, { fecha: '2026-10-22T18:00:00.000Z' }))
+      .expect(201);
     await request(app).post('/api/partidas').send(sesion(otro._id)).expect(201);
     const lista = (await request(app).get(`/api/videojuegos/${juego._id}/partidas`).expect(200)).body;
     expect(lista).toHaveLength(2);
@@ -111,92 +187,185 @@ describe('Resumen calculado en el servicio', () => {
   it('cero partidas devuelve ceros y null sin romperse', async () => {
     const juego = await crearJuego();
     expect((await request(app).get(`/api/videojuegos/${juego._id}/resumen`).expect(200)).body).toEqual({
-      totalPartidas: 0, horasTotales: 0, ultimaPartida: null, porcentajeAvanceActual: 0,
+      totalPartidas: 0,
+      horasTotales: 0,
+      ultimaPartida: null,
+      porcentajeAvanceActual: 0,
     });
     expect((await request(app).get(`/api/videojuegos/${juego._id}/partidas`).expect(200)).body).toEqual([]);
   });
   it('suma minutos, redondea, usa fecha más reciente y se actualiza al agregar/eliminar', async () => {
     const juego = await crearJuego();
-    await request(app).post('/api/partidas').send(sesion(juego._id, { fecha: '2026-10-22T12:00:00.000Z', porcentajeAvance: 40 })).expect(201);
-    await request(app).post('/api/partidas').send(sesion(juego._id, { fecha: '2026-10-20T12:00:00.000Z', porcentajeAvance: 90, duracionMinutos: 30 })).expect(201);
+    await request(app)
+      .post('/api/partidas')
+      .send(sesion(juego._id, { fecha: '2026-10-22T12:00:00.000Z', porcentajeAvance: 40 }))
+      .expect(201);
+    await request(app)
+      .post('/api/partidas')
+      .send(
+        sesion(juego._id, { fecha: '2026-10-20T12:00:00.000Z', porcentajeAvance: 90, duracionMinutos: 30 }),
+      )
+      .expect(201);
     const ruta = `/api/videojuegos/${juego._id}/resumen`;
-    expect((await request(app).get(ruta).expect(200)).body).toEqual({ totalPartidas: 2, horasTotales: 1.6, ultimaPartida: '2026-10-22T12:00:00.000Z', porcentajeAvanceActual: 40 });
-    const nueva = (await request(app).post('/api/partidas').send(sesion(juego._id, { fecha: '2026-10-23T12:00:00.000Z', duracionMinutos: 60, porcentajeAvance: 55 })).expect(201)).body;
-    expect((await request(app).get(ruta).expect(200)).body).toEqual({ totalPartidas: 3, horasTotales: 2.6, ultimaPartida: '2026-10-23T12:00:00.000Z', porcentajeAvanceActual: 55 });
+    expect((await request(app).get(ruta).expect(200)).body).toEqual({
+      totalPartidas: 2,
+      horasTotales: 1.6,
+      ultimaPartida: '2026-10-22T12:00:00.000Z',
+      porcentajeAvanceActual: 40,
+    });
+    const nueva = (
+      await request(app)
+        .post('/api/partidas')
+        .send(
+          sesion(juego._id, { fecha: '2026-10-23T12:00:00.000Z', duracionMinutos: 60, porcentajeAvance: 55 }),
+        )
+        .expect(201)
+    ).body;
+    expect((await request(app).get(ruta).expect(200)).body).toEqual({
+      totalPartidas: 3,
+      horasTotales: 2.6,
+      ultimaPartida: '2026-10-23T12:00:00.000Z',
+      porcentajeAvanceActual: 55,
+    });
     await request(app).delete(`/api/partidas/${nueva._id}`).expect(204);
     expect((await request(app).get(ruta).expect(200)).body.porcentajeAvanceActual).toBe(40);
   });
   it('desempata fechas iguales por creación e id descendentes', async () => {
     const juego = await crearJuego();
-    await Partida.create({ ...sesion(juego._id), _id: '000000000000000000000001', createdAt: new Date('2026-10-20') });
-    await Partida.create({ ...sesion(juego._id, { porcentajeAvance: 45 }), _id: '000000000000000000000002', createdAt: new Date('2026-10-20') });
-    expect((await request(app).get(`/api/videojuegos/${juego._id}/resumen`).expect(200)).body.porcentajeAvanceActual).toBe(45);
+    await Partida.create({
+      ...sesion(juego._id),
+      _id: '000000000000000000000001',
+      createdAt: new Date('2026-10-20'),
+    });
+    await Partida.create({
+      ...sesion(juego._id, { porcentajeAvance: 45 }),
+      _id: '000000000000000000000002',
+      createdAt: new Date('2026-10-20'),
+    });
+    expect(
+      (await request(app).get(`/api/videojuegos/${juego._id}/resumen`).expect(200)).body
+        .porcentajeAvanceActual,
+    ).toBe(45);
   });
   it('el seed es repetible y genera tres partidas con el resumen esperado', async () => {
     const juego = await sembrarDemo();
     await sembrarDemo();
     expect(await Videojuego.countDocuments()).toBe(1);
     expect((await request(app).get(`/api/videojuegos/${juego._id}/resumen`).expect(200)).body).toEqual({
-      totalPartidas: 3, horasTotales: 3.9, ultimaPartida: '2026-10-22T20:00:00.000Z', porcentajeAvanceActual: 38,
+      totalPartidas: 3,
+      horasTotales: 3.9,
+      ultimaPartida: '2026-10-22T20:00:00.000Z',
+      porcentajeAvanceActual: 38,
     });
   });
 });
 
 describe('Cuatro tipos de error y middleware', () => {
   it.each([
-    {}, { ...ficha, nombre: ' ' }, { ...ficha, plataforma: 'Atari' },
-    { ...ficha, genero: 'inventado' }, { ...ficha, estado: 'nuevo' },
+    {},
+    { ...ficha, nombre: ' ' },
+    { ...ficha, plataforma: 'Atari' },
+    { ...ficha, genero: 'inventado' },
+    { ...ficha, estado: 'nuevo' },
     { ...ficha, logros: [{ obtenido: false }] },
-  ])('validación de esquema: videojuego inválido → 400', async datos => {
+  ])('validación de esquema: videojuego inválido → 400', async (datos) => {
     errorTipo(await request(app).post('/api/videojuegos').send(datos), 400, 'VALIDACION');
   });
   it.each([
-    { fecha: undefined }, { duracionMinutos: undefined }, { duracionMinutos: 0 },
-    { porcentajeAvance: -1 }, { porcentajeAvance: 101 }, { videojuego: undefined },
-  ])('validación de esquema: partida inválida → 400', async datos => {
+    { fecha: undefined },
+    { duracionMinutos: undefined },
+    { duracionMinutos: 0 },
+    { porcentajeAvance: -1 },
+    { porcentajeAvance: 101 },
+    { videojuego: undefined },
+  ])('validación de esquema: partida inválida → 400', async (datos) => {
     const juego = await crearJuego();
     errorTipo(await request(app).post('/api/partidas').send(sesion(juego._id, datos)), 400, 'VALIDACION');
   });
-  it.each([null, [null], { nombre: 'No es un arreglo' }, Array.from({ length: 51 }, () => ({ nombre: 'Meta' }))])(
-    'rechaza logros nulos, elementos nulos, objetos sueltos y listas no acotadas', async logros => {
-      errorTipo(await request(app).post('/api/videojuegos').send({ ...ficha, logros }), 400,
-        logros && !Array.isArray(logros) ? 'ID_MALFORMADO' : 'VALIDACION');
-      const juego = await crearJuego();
-      errorTipo(await request(app).patch(`/api/videojuegos/${juego._id}`).send({ logros }), 400,
-        logros && !Array.isArray(logros) ? 'ID_MALFORMADO' : 'VALIDACION');
-      expect((await request(app).get(`/api/videojuegos/${juego._id}`).expect(200)).body.logros).toHaveLength(1);
-    },
-  );
+  it.each([
+    null,
+    [null],
+    { nombre: 'No es un arreglo' },
+    Array.from({ length: 51 }, () => ({ nombre: 'Meta' })),
+  ])('rechaza logros nulos, elementos nulos, objetos sueltos y listas no acotadas', async (logros) => {
+    errorTipo(
+      await request(app)
+        .post('/api/videojuegos')
+        .send({ ...ficha, logros }),
+      400,
+      logros && !Array.isArray(logros) ? 'ID_MALFORMADO' : 'VALIDACION',
+    );
+    const juego = await crearJuego();
+    errorTipo(
+      await request(app).patch(`/api/videojuegos/${juego._id}`).send({ logros }),
+      400,
+      logros && !Array.isArray(logros) ? 'ID_MALFORMADO' : 'VALIDACION',
+    );
+    expect((await request(app).get(`/api/videojuegos/${juego._id}`).expect(200)).body.logros).toHaveLength(1);
+  });
   it('acepta cero y hasta 50 logros y conserva el booleano por defecto', async () => {
     for (const cantidad of [0, 50]) {
-      const respuesta = await request(app).post('/api/videojuegos').send({
-        ...ficha, logros: Array.from({ length: cantidad }, (_, i) => ({ nombre: `Meta ${i + 1}` })),
-      }).expect(201);
+      const respuesta = await request(app)
+        .post('/api/videojuegos')
+        .send({
+          ...ficha,
+          logros: Array.from({ length: cantidad }, (_, i) => ({ nombre: `Meta ${i + 1}` })),
+        })
+        .expect(201);
       expect(respuesta.body.logros).toHaveLength(cantidad);
-      expect(respuesta.body.logros.every((logro: { obtenido: boolean }) => logro.obtenido === false)).toBe(true);
+      expect(respuesta.body.logros.every((logro: { obtenido: boolean }) => logro.obtenido === false)).toBe(
+        true,
+      );
     }
   });
   it('rechaza duraciones infinitas que convertirían las horas del resumen en null', async () => {
     const juego = await crearJuego();
-    const cuerpo = JSON.stringify(sesion(juego._id)).replace('"duracionMinutos":65', '"duracionMinutos":1e309');
-    errorTipo(await request(app).post('/api/partidas').set('Content-Type', 'application/json').send(cuerpo), 400, 'VALIDACION');
+    const cuerpo = JSON.stringify(sesion(juego._id)).replace(
+      '"duracionMinutos":65',
+      '"duracionMinutos":1e309',
+    );
+    errorTipo(
+      await request(app).post('/api/partidas').set('Content-Type', 'application/json').send(cuerpo),
+      400,
+      'VALIDACION',
+    );
     const partida = (await request(app).post('/api/partidas').send(sesion(juego._id)).expect(201)).body;
-    errorTipo(await request(app).patch(`/api/partidas/${partida._id}`).set('Content-Type', 'application/json')
-      .send('{"duracionMinutos":1e309}'), 400, 'VALIDACION');
+    errorTipo(
+      await request(app)
+        .patch(`/api/partidas/${partida._id}`)
+        .set('Content-Type', 'application/json')
+        .send('{"duracionMinutos":1e309}'),
+      400,
+      'VALIDACION',
+    );
   });
   it('acepta los límites de avance 0 y 100 y duración mínima 1', async () => {
     const juego = await crearJuego();
     for (const porcentajeAvance of [0, 100]) {
-      await request(app).post('/api/partidas').send(sesion(juego._id, { porcentajeAvance, duracionMinutos: 1 })).expect(201);
+      await request(app)
+        .post('/api/partidas')
+        .send(sesion(juego._id, { porcentajeAvance, duracionMinutos: 1 }))
+        .expect(201);
     }
   });
-  it.each(['/api/videojuegos/no-id', '/api/videojuegos/no-id/resumen', '/api/videojuegos/no-id/partidas', '/api/partidas/no-id'])('cast: %s → 400', async ruta => {
+  it.each([
+    '/api/videojuegos/no-id',
+    '/api/videojuegos/no-id/resumen',
+    '/api/videojuegos/no-id/partidas',
+    '/api/partidas/no-id',
+  ])('cast: %s → 400', async (ruta) => {
     errorTipo(await request(app).get(ruta), 400, 'ID_MALFORMADO');
   });
   it('cast en referencia y fecha inválida → 400', async () => {
     errorTipo(await request(app).post('/api/partidas').send(sesion('no-id')), 400, 'ID_MALFORMADO');
     const juego = await crearJuego();
-    errorTipo(await request(app).post('/api/partidas').send(sesion(juego._id, { fecha: 'ayer' })), 400, 'ID_MALFORMADO');
+    errorTipo(
+      await request(app)
+        .post('/api/partidas')
+        .send(sesion(juego._id, { fecha: 'ayer' })),
+      400,
+      'ID_MALFORMADO',
+    );
   });
   it('referencia inexistente → 404 y no crea la partida', async () => {
     errorTipo(await request(app).post('/api/partidas').send(sesion(idAusente)), 404, 'NO_ENCONTRADO');
@@ -213,24 +382,76 @@ describe('Cuatro tipos de error y middleware', () => {
     }
   });
   it('error inesperado de base de datos → 500 sin filtrar detalles privados', async () => {
-    vi.spyOn(Videojuego, 'find').mockImplementationOnce(() => { throw new Error('detalle privado'); });
+    vi.spyOn(Videojuego, 'find').mockImplementationOnce(() => {
+      throw new Error('detalle privado');
+    });
     const respuesta = await request(app).get('/api/videojuegos');
     errorTipo(respuesta, 500, 'INTERNO');
     expect(JSON.stringify(respuesta.body)).not.toContain('detalle privado');
     expect(console.error).toHaveBeenCalled();
   });
   it('JSON inválido y cuerpo que no es objeto → 400', async () => {
-    errorTipo(await request(app).post('/api/videojuegos').set('Content-Type', 'application/json').send('{'), 400, 'VALIDACION');
+    errorTipo(
+      await request(app).post('/api/videojuegos').set('Content-Type', 'application/json').send('{'),
+      400,
+      'VALIDACION',
+    );
     errorTipo(await request(app).post('/api/videojuegos').send([]), 400, 'VALIDACION');
   });
   it('health, ruta desconocida, requestId, logger y CORS', async () => {
-    const respuesta = await request(app).get('/api/health').set('Origin', 'http://localhost:5173').expect(200);
+    const respuesta = await request(app)
+      .get('/api/health')
+      .set('Origin', 'http://localhost:5173')
+      .expect(200);
     expect(respuesta.body.estado).toBe('disponible');
     expect(respuesta.headers['x-request-id']).toMatch(/^[a-f0-9-]{36}$/);
     expect(respuesta.headers['access-control-allow-origin']).toBe('http://localhost:5173');
     expect(console.info).toHaveBeenCalledWith(expect.stringContaining(respuesta.headers['x-request-id']));
-    const preflight = await request(app).options('/api/videojuegos').set('Origin', 'http://localhost:5173').set('Access-Control-Request-Method', 'PATCH').expect(204);
+    const preflight = await request(app)
+      .options('/api/videojuegos')
+      .set('Origin', 'http://localhost:5173')
+      .set('Access-Control-Request-Method', 'PATCH')
+      .expect(204);
     expect(preflight.headers['access-control-allow-methods']).toContain('PATCH');
     errorTipo(await request(app).get('/api/desconocida'), 404, 'NO_ENCONTRADO');
+  });
+});
+
+// D-2 · Partidas sin fecha futura (spec 03, sección 3).
+describe('D-2 · Partidas con fecha futura', () => {
+  const enMinutos = (minutos: number) => new Date(Date.now() + minutos * 60_000).toISOString();
+
+  it('CA-D2.1 crear una partida a más de 5 minutos en el futuro → 400 y no se guarda', async () => {
+    const juego = await crearJuego();
+    errorTipo(
+      await request(app)
+        .post('/api/partidas')
+        .send(sesion(juego._id, { fecha: enMinutos(60 * 24) })),
+      400,
+      'VALIDACION',
+    );
+    expect(await Partida.countDocuments()).toBe(0);
+  });
+
+  it('CA-D2.2 editar a una fecha futura → 400 y conserva la fecha anterior', async () => {
+    const juego = await crearJuego();
+    const partida = (await request(app).post('/api/partidas').send(sesion(juego._id)).expect(201)).body;
+    errorTipo(
+      await request(app)
+        .patch(`/api/partidas/${partida._id}`)
+        .send({ fecha: enMinutos(30) }),
+      400,
+      'VALIDACION',
+    );
+    expect((await request(app).get(`/api/partidas/${partida._id}`).expect(200)).body.fecha).toBe(
+      partida.fecha,
+    );
+  });
+
+  it('CA-D2.3 acepta la hora actual, un reloj adelantado hasta 5 minutos y fechas pasadas', async () => {
+    const juego = await crearJuego();
+    for (const fecha of [enMinutos(0), enMinutos(4), enMinutos(-60 * 24 * 30)]) {
+      await request(app).post('/api/partidas').send(sesion(juego._id, { fecha })).expect(201);
+    }
   });
 });

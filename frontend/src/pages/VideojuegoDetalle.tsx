@@ -7,10 +7,13 @@ import { mensajeError, useCarga } from "../hooks/useCarga";
 import { Encabezado } from "../components/Encabezado";
 import { Cargando, Fallo, Vacio } from "../components/Estados";
 import { fechaLegible, PartidasTabla } from "../components/PartidasTabla";
+import { ProgresoSemanal } from "../components/ProgresoSemanal";
 
 export function VideojuegoDetalle() {
   const { id = "" } = useParams();
   const navegar = useNavigate();
+  // Cambia cada vez que las partidas cambian para que el progreso se vuelva a consultar (HU-2.7).
+  const [revisionPartidas, setRevisionPartidas] = useState(0);
   const [ocupado, setOcupado] = useState("");
   const [errorAccion, setErrorAccion] = useState("");
   const consulta = useCarga(async () => {
@@ -80,6 +83,7 @@ export function VideojuegoDetalle() {
     setErrorAccion("");
     try {
       await partidasApi.eliminar(partidaId);
+      setRevisionPartidas((valor) => valor + 1);
       consulta.recargar();
     } catch (error) {
       setErrorAccion(mensajeError(error));
@@ -132,6 +136,11 @@ export function VideojuegoDetalle() {
       />
       <span className={`chip ${juego.estado}`}>{etiquetas[juego.estado]}</span>
       {errorAccion && <Fallo mensaje={errorAccion} />}
+      <ProgresoSemanal
+        videojuegoId={id}
+        estadoJuego={juego.estado}
+        revision={revisionPartidas}
+      />
       <section className="resumen-panel" aria-labelledby="titulo-resumen">
         <div className="titulo-seccion">
           <div>
@@ -148,7 +157,10 @@ export function VideojuegoDetalle() {
           <div>
             <dt>Horas totales</dt>
             <dd>
-              {resumen.horasTotales.toFixed(1)}
+              {resumen.horasTotales.toLocaleString("es-EC", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })}
               <span> h</span>
             </dd>
           </div>
