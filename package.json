@@ -1,0 +1,14 @@
+{
+  "name": "diario-progreso-gamer",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Raíz del monorepo: herramientas compartidas por el backend, el frontend y el harness del agente.",
+  "scripts": {
+    "format": "prettier --write \"backend/{src,tests}/**/*.ts\" \"backend/*.{json,mts}\" \"frontend/src/**/*.{ts,tsx,css}\" \"frontend/tests/**/*.mjs\" \"frontend/*.{json,ts}\" \".claude/**/*.{mjs,json}\"",
+    "format:check": "prettier --check \"backend/{src,tests}/**/*.ts\" \"frontend/src/**/*.{ts,tsx,css}\" \"frontend/tests/**/*.mjs\" \".claude/**/*.{mjs,json}\"",
+    "test": "npm --prefix backend test && npm --prefix frontend test"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}

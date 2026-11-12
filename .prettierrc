@@ -1,0 +1,9 @@
+{
+  "endOfLine": "auto",
+  "overrides": [
+    {
+      "files": ["backend/**/*.ts", "backend/**/*.mts"],
+      "options": { "singleQuote": true, "printWidth": 110 }
+    }
+  ]
+}
