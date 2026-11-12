@@ -69,11 +69,14 @@ function Formulario({ juego, meta }: { juego: Videojuego; meta: Meta | null }) {
   const [horas, setHoras] = useState(meta ? String(meta.horasSemanales) : "");
   const [dias, setDias] = useState(meta ? String(meta.diasPorSemana) : "3");
   const [hitos, setHitos] = useState<HitoBorrador[]>(() =>
-    (meta?.hitos ?? []).map((hito) => ({
-      clave: hito._id,
-      descripcion: hito.descripcion,
-      porcentajeObjetivo: String(hito.porcentajeObjetivo),
-    })),
+    // DR-4: mismo orden que el progreso (RN-02), de menor a mayor objetivo.
+    [...(meta?.hitos ?? [])]
+      .sort((a, b) => a.porcentajeObjetivo - b.porcentajeObjetivo)
+      .map((hito) => ({
+        clave: hito._id,
+        descripcion: hito.descripcion,
+        porcentajeObjetivo: String(hito.porcentajeObjetivo),
+      })),
   );
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");

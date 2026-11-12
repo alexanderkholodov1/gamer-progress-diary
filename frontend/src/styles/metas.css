@@ -281,3 +281,9 @@ progress.progreso-barra::-moz-progress-bar {
   gap: var(--espacio-4);
   white-space: nowrap;
 }
+
+/* Revisión de diseño T-11: tamaño mínimo de 12 px en textos de E2 (DR-1, DR-2) */
+.progreso-panel .ceja,
+.meta-form .ayuda {
+  font-size: var(--texto-mini);
+}

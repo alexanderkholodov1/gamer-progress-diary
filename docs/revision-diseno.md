@@ -26,3 +26,15 @@ Ticket T-11. El agente revisó las pantallas nuevas de E2 contra [DESIGN.md](../
 | DR-4 | El formulario de meta lista los hitos en el orden en que se guardaron (100 %, 25 %, 50 %), pero el progreso los muestra de menor a mayor | RN-02 y principio «los números se explican»: el mismo dato no puede aparecer en dos órdenes | `MetaFormulario.tsx` | Los hitos se ordenan por objetivo al cargar el formulario |
 
 Las cuatro desviaciones se corrigen en el commit `fix(E2): T-11 …` y se vuelven a medir abajo.
+
+## Después de las correcciones
+
+Nueva medición con el mismo script, a 1280 y 390 px:
+
+| # | Verificación | Resultado |
+| --- | --- | --- |
+| DR-1 | Textos de menos de 12 px dentro de `.progreso-panel` | 0 en las 4 pantallas de detalle |
+| DR-2 | Textos de menos de 12 px dentro de `.meta-form` | 0 |
+| DR-3 | El resumen muestra «8,3 h» y el progreso «3,5 h» | Corregido ([captura](capturas/e2/despues-detalle-hades-1280.png)) |
+| DR-4 | El formulario muestra los hitos 25 %, 50 % y 100 % en ese orden | Corregido ([captura](capturas/e2/despues-meta-editar-hades-390.png)) |
+| — | Scroll horizontal, campos sin etiqueta y foco de la confirmación | Sin cambios: siguen cumpliendo |

@@ -157,7 +157,10 @@ export function VideojuegoDetalle() {
           <div>
             <dt>Horas totales</dt>
             <dd>
-              {resumen.horasTotales.toFixed(1)}
+              {resumen.horasTotales.toLocaleString("es-EC", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })}
               <span> h</span>
             </dd>
           </div>
