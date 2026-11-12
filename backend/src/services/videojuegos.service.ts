@@ -4,7 +4,12 @@ import { HttpError } from '../errors';
 import { camposPermitidos, validarId } from './helpers';
 
 const campos = ['nombre', 'plataforma', 'genero', 'estado', 'logros'] as const;
-export interface Filtros { nombre?: string; plataforma?: string; genero?: string; estado?: string }
+export interface Filtros {
+  nombre?: string;
+  plataforma?: string;
+  genero?: string;
+  estado?: string;
+}
 
 export async function listar(filtros: Filtros = {}) {
   const consulta: Record<string, unknown> = {};

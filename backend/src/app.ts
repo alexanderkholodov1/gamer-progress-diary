@@ -20,5 +20,7 @@ app.get('/api/health', (_req, res) => {
 });
 app.use('/api/videojuegos', videojuegosRouter);
 app.use('/api/partidas', partidasRouter);
-app.use((_req, _res, next) => next(new HttpError(404, 'No se encontró la ruta solicitada.', 'NO_ENCONTRADO')));
+app.use((_req, _res, next) =>
+  next(new HttpError(404, 'No se encontró la ruta solicitada.', 'NO_ENCONTRADO')),
+);
 app.use(errorHandler);
