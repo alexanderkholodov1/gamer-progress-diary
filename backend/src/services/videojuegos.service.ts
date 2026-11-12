@@ -2,6 +2,7 @@ import { Videojuego } from '../models/Videojuego';
 import { Partida } from '../models/Partida';
 import { Meta } from '../models/Meta';
 import { HttpError } from '../errors';
+import { calcularResumen } from '../dominio/resumen';
 import { camposPermitidos, validarId } from './helpers';
 
 const campos = ['nombre', 'plataforma', 'genero', 'estado', 'logros'] as const;
@@ -73,14 +74,7 @@ export async function listarPartidas(id: string) {
   return Partida.find({ videojuego: id }).sort({ fecha: -1, createdAt: -1, _id: -1 });
 }
 
+// D-1: el servicio solo consulta; el cálculo vive en la capa de dominio.
 export async function resumen(id: string) {
-  const partidas = await listarPartidas(id);
-  const minutos = partidas.reduce((total, partida) => total + partida.duracionMinutos, 0);
-  const ultima = partidas[0];
-  return {
-    totalPartidas: partidas.length,
-    horasTotales: Math.round((minutos / 60) * 10) / 10,
-    ultimaPartida: ultima?.fecha ?? null,
-    porcentajeAvanceActual: ultima?.porcentajeAvance ?? 0,
-  };
+  return calcularResumen(await listarPartidas(id));
 }
