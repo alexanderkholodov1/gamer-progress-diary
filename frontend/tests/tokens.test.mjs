@@ -43,3 +43,32 @@ test("toda variable --color-* que menciona DESIGN.md existe en tokens.css", asyn
     [],
   );
 });
+
+// Colores literales: hexadecimales, funciones de color y nombres comunes usados como valor.
+export function coloresLiterales(css) {
+  const sinComentarios = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const patron =
+    /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?)\(|:\s*[^;{}]*\b(?:white|black)\b/gi;
+  return [...sinComentarios.matchAll(patron)].map(([coincidencia]) =>
+    coincidencia.trim(),
+  );
+}
+
+async function variablesInexistentes(css) {
+  const tokens = variablesDeTokens(await leer("../src/styles/tokens.css"));
+  const usadas = new Set(
+    [...css.matchAll(/var\((--[\w-]+)/g)].map(([, nombre]) => nombre),
+  );
+  return [...usadas].filter((nombre) => !tokens.has(nombre));
+}
+
+test("CA-F.1 los estilos de E2 (metas.css) no tienen colores literales", async () => {
+  assert.deepEqual(coloresLiterales(await leer("../src/styles/metas.css")), []);
+});
+
+test("CA-F.1 cada variable que usa metas.css existe en tokens.css", async () => {
+  assert.deepEqual(
+    await variablesInexistentes(await leer("../src/styles/metas.css")),
+    [],
+  );
+});
