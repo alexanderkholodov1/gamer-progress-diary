@@ -94,153 +94,153 @@ Tipos: **Modelo**, **Dominio**, **API**, **Frontend**, **Diseño**, **Deuda**, *
 
 Definition of Done:
 
-- [ ] `Meta` referencia un `Videojuego`; horas > 0 y ≤ 100; días entero 1–7; `activa` por defecto `true`; timestamps.
-- [ ] Hitos embebidos: hasta 5, descripción obligatoria y objetivo 1–100.
-- [ ] Índice que impide dos metas activas para el mismo juego.
-- [ ] Tests de validación del modelo sin base de datos.
+- [x] `Meta` referencia un `Videojuego`; horas > 0 y ≤ 100; días entero 1–7; `activa` por defecto `true`; timestamps.
+- [x] Hitos embebidos: hasta 5, descripción obligatoria y objetivo 1–100.
+- [x] Índice que impide dos metas activas para el mismo juego.
+- [x] Tests de validación del modelo sin base de datos.
 
-Dependencias: ninguna. Estado: pendiente.
+Dependencias: ninguna. Estado: hecho.
 
 #### T-02 · API · Conflicto 409 en el manejo de errores · HU-2.1
 
 Definition of Done:
 
-- [ ] `HttpError` admite 409 y el tipo `CONFLICTO`.
-- [ ] Una clave duplicada de MongoDB también responde 409 con un mensaje claro.
-- [ ] El `errorHandler` distingue 400, 404, 409 y 500, con test por cada uno.
+- [x] `HttpError` admite 409 y el tipo `CONFLICTO`.
+- [x] Una clave duplicada de MongoDB también responde 409 con un mensaje claro.
+- [x] El `errorHandler` distingue 400, 404, 409 y 500, con test por cada uno.
 
-Dependencias: ninguna. Estado: pendiente.
+Dependencias: ninguna. Estado: hecho.
 
 #### T-03 · Dominio · Funciones puras de semana, días, racha e hitos · HU-2.3, HU-2.4, HU-2.5
 
 Definition of Done:
 
-- [ ] Tests escritos y commiteados **antes** que las funciones.
-- [ ] `src/dominio/progreso.ts` no importa Mongoose ni accede a la base de datos.
-- [ ] Día y semana en `America/Guayaquil`; racha viva con partida ayer; un día por fecha; partida de medianoche en su día de inicio; porcentaje sin tope; hitos con el avance actual; partidas futuras ignoradas.
-- [ ] Al menos un test por cada criterio de la spec verificable sin base de datos.
+- [x] Tests escritos y commiteados **antes** que las funciones.
+- [x] `src/dominio/progreso.ts` no importa Mongoose ni accede a la base de datos.
+- [x] Día y semana en `America/Guayaquil`; racha viva con partida ayer; un día por fecha; partida de medianoche en su día de inicio; porcentaje sin tope; hitos con el avance actual; partidas futuras ignoradas.
+- [x] Al menos un test por cada criterio de la spec verificable sin base de datos.
 
-Dependencias: ninguna. Estado: pendiente.
+Dependencias: ninguna. Estado: hecho.
 
 #### T-04 · API · CRUD de metas · HU-2.1, HU-2.2
 
 Definition of Done:
 
-- [ ] Crear, consultar por id, listar las metas de un juego, actualizar y desactivar.
-- [ ] Al crear: 404 si el juego no existe, 409 si ya tiene meta activa o si está completado/abandonado.
-- [ ] Una meta desactivada no se edita ni se reactiva (409).
-- [ ] Tests de integración por cada operación y error.
+- [x] Crear, consultar por id, listar las metas de un juego, actualizar y desactivar.
+- [x] Al crear: 404 si el juego no existe, 409 si ya tiene meta activa o si está completado/abandonado.
+- [x] Una meta desactivada no se edita ni se reactiva (409).
+- [x] Tests de integración por cada operación y error.
 
-Dependencias: T-01, T-02. Estado: pendiente.
+Dependencias: T-01, T-02. Estado: hecho.
 
 #### T-05 · API · Progreso semanal · HU-2.3, HU-2.4, HU-2.5
 
 Definition of Done:
 
-- [ ] `GET /api/videojuegos/:id/progreso-semanal` con la forma de la ficha.
-- [ ] El servicio solo consulta y llama al dominio.
-- [ ] Sin meta (`meta: null`, `porcentajeHoras: null`), sin partidas (ceros), 400 y 404.
-- [ ] Tabla de pruebas con curl: juego sin partidas, juego con 5+ partidas y racha rota, errores 400, 404 y 409.
+- [x] `GET /api/videojuegos/:id/progreso-semanal` con la forma de la ficha.
+- [x] El servicio solo consulta y llama al dominio.
+- [x] Sin meta (`meta: null`, `porcentajeHoras: null`), sin partidas (ceros), 400 y 404.
+- [x] Tabla de pruebas con curl: juego sin partidas, juego con 5+ partidas y racha rota, errores 400, 404 y 409.
 
-Dependencias: T-03, T-04. Estado: pendiente.
+Dependencias: T-03, T-04. Estado: hecho.
 
 #### T-06 · API · Ciclo de vida de las metas · HU-2.6
 
 Definition of Done:
 
-- [ ] Eliminar un juego elimina sus metas.
-- [ ] Pasar un juego a completado/abandonado desactiva su meta; pausado la conserva.
-- [ ] Tests de integración.
+- [x] Eliminar un juego elimina sus metas.
+- [x] Pasar un juego a completado/abandonado desactiva su meta; pausado la conserva.
+- [x] Tests de integración.
 
-Dependencias: T-04. Estado: pendiente.
+Dependencias: T-04. Estado: hecho.
 
 #### T-07 · Frontend · Servicio `metasApi.ts` y tipos · HU-2.1 a HU-2.5
 
 Definition of Done:
 
-- [ ] `src/api/metasApi.ts` con crear, obtener, listar por juego, actualizar, desactivar y progreso semanal.
-- [ ] Tipos `Meta`, `Hito` y `ProgresoSemanal` en `tipos.ts`.
-- [ ] Ningún componente llama a `fetch`.
+- [x] `src/api/metasApi.ts` con crear, obtener, listar por juego, actualizar, desactivar y progreso semanal.
+- [x] Tipos `Meta`, `Hito` y `ProgresoSemanal` en `tipos.ts`.
+- [x] Ningún componente llama a `fetch`.
 
-Dependencias: T-04, T-05. Estado: pendiente.
+Dependencias: T-04, T-05. Estado: hecho.
 
 #### T-08 · Frontend · Sección de progreso semanal · HU-2.3, HU-2.4, HU-2.5, HU-2.7
 
 Definition of Done:
 
-- [ ] Barra de horas frente a la meta, días jugados frente a días objetivo, racha actual, mejor racha e hitos con su estado.
-- [ ] Estados de carga, error con reintento y vacío (sin meta invita a crear una).
-- [ ] Estilos solo con tokens de `tokens.css`.
+- [x] Barra de horas frente a la meta, días jugados frente a días objetivo, racha actual, mejor racha e hitos con su estado.
+- [x] Estados de carga, error con reintento y vacío (sin meta invita a crear una).
+- [x] Estilos solo con tokens de `tokens.css`.
 
-Dependencias: T-07. Estado: pendiente.
+Dependencias: T-07. Estado: hecho.
 
 #### T-09 · Frontend · Editar partidas y refrescar el progreso · HU-2.7
 
 Definition of Done:
 
-- [ ] Pantalla para editar una partida (fecha, duración, avance y notas).
-- [ ] El progreso se vuelve a consultar al registrar, editar o eliminar una partida.
+- [x] Pantalla para editar una partida (fecha, duración, avance y notas).
+- [x] El progreso se vuelve a consultar al registrar, editar o eliminar una partida.
 
-Dependencias: T-08. Estado: pendiente.
+Dependencias: T-08. Estado: hecho.
 
 #### T-10 · Frontend · Formulario de meta y desactivación · HU-2.1, HU-2.2
 
 Definition of Done:
 
-- [ ] Formulario para crear y editar la meta con sus hitos (máximo 5), con límites iguales a los de la API.
-- [ ] Los rechazos de la API (por ejemplo, meta duplicada) se muestran en lenguaje claro.
-- [ ] Desactivar con confirmación en línea que explica la consecuencia.
+- [x] Formulario para crear y editar la meta con sus hitos (máximo 5), con límites iguales a los de la API.
+- [x] Los rechazos de la API (por ejemplo, meta duplicada) se muestran en lenguaje claro.
+- [x] Desactivar con confirmación en línea que explica la consecuencia.
 
-Dependencias: T-07, T-08. Estado: pendiente.
+Dependencias: T-07, T-08. Estado: hecho.
 
 #### T-11 · Diseño · Revisión contra DESIGN.md · HU-2.3 a HU-2.7
 
 Definition of Done:
 
-- [ ] Tabla de revisión en `docs/revision-diseno.md` con cada desviación encontrada.
-- [ ] Desviaciones corregidas en commits propios.
+- [x] Tabla de revisión en `docs/revision-diseno.md` con cada desviación encontrada.
+- [x] Desviaciones corregidas en commits propios.
 
-Dependencias: T-08, T-09, T-10. Estado: pendiente.
+Dependencias: T-08, T-09, T-10. Estado: hecho.
 
 #### T-12 · Deuda · D-1 Resumen en la capa de dominio
 
 Definition of Done:
 
-- [ ] Test puro de `calcularResumen` antes del cambio.
-- [ ] El servicio de resumen y el de progreso usan la misma función pura.
-- [ ] Los tests de E1 siguen pasando.
+- [x] Test puro de `calcularResumen` antes del cambio.
+- [x] El servicio de resumen y el de progreso usan la misma función pura.
+- [x] Los tests de E1 siguen pasando.
 
-Dependencias: T-03, T-05. Estado: pendiente.
+Dependencias: T-03, T-05. Estado: hecho.
 
 #### T-13 · Deuda · D-2 Rechazar partidas con fecha futura
 
 Definition of Done:
 
-- [ ] Test de integración que falla antes del cambio.
-- [ ] La API rechaza partidas a más de 5 minutos en el futuro, al crear y al editar.
-- [ ] El formulario del frontend limita la fecha máxima.
+- [x] Test de integración que falla antes del cambio.
+- [x] La API rechaza partidas a más de 5 minutos en el futuro, al crear y al editar.
+- [x] El formulario del frontend limita la fecha máxima.
 
-Dependencias: ninguna. Estado: pendiente.
+Dependencias: ninguna. Estado: hecho.
 
 #### T-14 · Deuda · D-3 Colores de `styles.css` desde tokens
 
 Definition of Done:
 
-- [ ] Test que falla mientras haya colores literales fuera de `tokens.css`.
-- [ ] `styles.css` usa solo variables de `tokens.css`; se eliminan las variables antiguas.
-- [ ] Revisión visual de las pantallas de E1.
+- [x] Test que falla mientras haya colores literales fuera de `tokens.css`.
+- [x] `styles.css` usa solo variables de `tokens.css`; se eliminan las variables antiguas.
+- [x] Revisión visual de las pantallas de E1.
 
-Dependencias: ninguna. Estado: pendiente.
+Dependencias: ninguna. Estado: hecho.
 
 #### T-15 · Cierre · Auditoría, despliegue y pull request
 
 Definition of Done:
 
-- [ ] `docs/AUDITORIA.md` con una fila por criterio de cada spec.
+- [x] `docs/AUDITORIA.md` con una fila por criterio de cada spec.
 - [ ] Render actualizado con E2 y verificado con curl.
 - [ ] Pull request con los tickets listados y enlace a la auditoría.
 
-Dependencias: T-01 a T-14. Estado: pendiente.
+Dependencias: T-01 a T-14. Estado: en curso (auditoría hecha; falta desplegar e integrar el PR).
 
 ## Orden de ejecución
 
@@ -250,7 +250,7 @@ T-01 → T-02 → T-03 (tests, luego código) → T-04 → T-05 → T-06 → T-0
 
 Problemas de [docs/diagnostico.md](../diagnostico.md).
 
-### A pagar en esta épica (ciclo completo: criterio, test, código y verificación)
+### Pagada en esta épica (ciclo completo: criterio, test, código y verificación)
 
 | Id | Problema | Ticket | Criterio |
 | --- | --- | --- | --- |
